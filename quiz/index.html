@@ -1,0 +1,301 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Which Animal are You?</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="../apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="../favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="../favicon-16x16.png"
+    />
+    <link rel="manifest" href="../site.webmanifest" />
+    <style>
+/* General page styles */
+:root{
+  --bg: #f0f3f7;
+  --card: #ffffff;
+  --muted: #67718a;
+  --accent-a: #6e8efb;
+  --accent-b: #a777e3;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  font-family:-apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color:#223;
+  -webkit-font-smoothing:antialiased;
+}
+.quiz{
+  max-width:760px;
+  margin:3.5rem auto;
+  padding:1.75rem;
+  background:var(--card);
+  border-radius:14px;
+  box-shadow:0 8px 30px rgba(31,41,55,0.06);
+}
+h1{margin:0 0 .25rem 0;font-size:1.75rem}
+h3{margin:0 0 1rem 0;color:var(--muted);font-weight:600}
+hr{border:0;height:1px;background:linear-gradient(90deg,transparent,#eef2ff,transparent);margin:1rem 0}
+
+.question{margin:.75rem 0;padding:0}
+.question p{margin:.25rem 0 0.5rem 0;font-weight:600;color:#2b3550}
+.option{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.6rem .9rem;border-radius:10px;margin:.35rem 0;background:#fbfcff;border:1px solid rgba(22,30,78,0.03);cursor:pointer;transition:all .15s ease;
+}
+.option input{width:18px;height:18px;flex:0 0 auto}
+.option:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(110,142,251,0.08)}
+.option input:focus-visible{outline:3px solid rgba(110,142,251,0.18);outline-offset:2px}
+
+.button{text-align:center;margin-top:1rem}
+.button button{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));color:#fff;border:none;padding:.75rem 1.25rem;border-radius:10px;font-weight:700;cursor:pointer;font-size:1rem;box-shadow:0 10px 30px rgba(110,142,251,0.18);transition:transform .12s ease, box-shadow .12s ease}
+.button button:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(110,142,251,0.22)}
+
+.result-wrapper{margin-top:1rem}
+.result{
+  background:linear-gradient(135deg,var(--accent-a),var(--accent-b));
+  padding:28px;border-radius:12px;color:#fff;text-align:center;font-weight:800;font-size:1.5rem;letter-spacing:.6px;text-transform:uppercase;box-shadow:0 12px 36px rgba(32,37,71,0.18);
+}
+
+@media (max-width:720px){
+  .quiz{margin:1.5rem;padding:1rem;border-radius:12px}
+  h1{font-size:1.4rem}
+  .result{font-size:1.15rem;padding:18px}
+}
+
+/* simple reset for links */
+a{color:inherit;text-decoration:none}
+
+    </style>
+  </head>
+  <body>
+    <div class="quiz">
+      <h1>Which Animal are You?</h1>
+      <h3>Take this quiz to find out!</h3>
+      <hr />
+
+      <div class="question">
+        <p>Which would you prefer:</p>
+        <label class="option"><input type="radio" id="q1-1" name="q1" value="1"> 1. Spending the day relaxing at a beach house by yourself</label>
+        <label class="option"><input type="radio" id="q1-2" name="q1" value="2"> 2. Going to a party with your friends</label>
+      </div>
+
+      <div class="question">
+        <p>Would you rather:</p>
+        <label class="option"><input type="radio" id="q2-1" name="q2" value="1"> 1. Watch a funny movie at the cinema</label>
+        <label class="option"><input type="radio" id="q2-2" name="q2" value="2"> 2. Attend a lecture from a famous scientist</label>
+      </div>
+
+      <div class="question">
+        <p>When assembling something, do you:</p>
+        <label class="option"><input type="radio" id="q9-1" name="q9" value="1"> 1. Follow the instructions step-by-step from start to finish</label>
+        <label class="option"><input type="radio" id="q9-2" name="q9" value="2"> 2. Skip ahead to get the main pieces together first</label>
+      </div>
+
+      <div class="question">
+        <p>Would you rather:</p>
+        <label class="option"><input type="radio" id="q8-1" name="q8" value="1"> 1. Read a fiction book</label>
+        <label class="option"><input type="radio" id="q8-2" name="q8" value="2"> 2. Read a nonfiction book</label>
+      </div>
+
+      <div class="question">
+        <p>What do you trust more to make a difficult decision:</p>
+        <label class="option"><input type="radio" id="q3-1" name="q3" value="1"> 1. Trust your gut instinct</label>
+        <label class="option"><input type="radio" id="q3-2" name="q3" value="2"> 2. Consider the facts and situation</label>
+      </div>
+
+      <div class="question">
+        <p>How would you approach a puzzle or game:</p>
+        <label class="option"><input type="radio" id="q10-1" name="q10" value="1"> 1. Try to solve it as quickly as possible</label>
+        <label class="option"><input type="radio" id="q10-2" name="q10" value="2"> 2. Take your time, enjoying each step</label>
+      </div>
+
+      <div class="question">
+        <p>Would you rather:</p>
+        <label class="option"><input type="radio" id="q6-1" name="q6" value="1"> 1. Keep your privacy</label>
+        <label class="option"><input type="radio" id="q6-2" name="q6" value="2"> 2. Be famous</label>
+      </div>
+
+      <div class="question">
+        <p>Would you rather:</p>
+        <label class="option"><input type="radio" id="q4-1" name="q4" value="1"> 1. Wait 1 hour for food at a fancy restaurant</label>
+        <label class="option"><input type="radio" id="q4-2" name="q4" value="2"> 2. Wait 5 minutes for food at a diner</label>
+      </div>
+
+      <div class="question">
+        <p>Which board game would you prefer:</p>
+        <label class="option"><input type="radio" id="q12-1" name="q12" value="1"> 1. One with clear rules and strategies</label>
+        <label class="option"><input type="radio" id="q12-2" name="q12" value="2"> 2. One that requires observing how other players act and feel</label>
+      </div>
+
+      <div class="question">
+        <p>Would you rather:</p>
+        <label class="option"><input type="radio" id="q5-1" name="q5" value="1"> 1. Attend a speech about your favorite topic</label>
+        <label class="option"><input type="radio" id="q5-2" name="q5" value="2"> 2. Give a speech about your favorite topic</label>
+      </div>
+
+      <div class="question">
+        <p>If someone toilet-papered your house, you would most likely:</p>
+        <label class="option"><input type="radio" id="q7-1" name="q7" value="1"> 1. Get them back twice as hard</label>
+        <label class="option"><input type="radio" id="q7-2" name="q7" value="2"> 2. Alert the authorities</label>
+      </div>
+
+      <div class="question">
+        <p>When choosing a movie to watch, you:</p>
+        <label class="option"><input type="radio" id="q11-1" name="q11" value="1"> 1. Pick based on reviews and ratings</label>
+        <label class="option"><input type="radio" id="q11-2" name="q11" value="2"> 2. Choose one that matches your current mood</label>
+      </div>
+
+      <p class="button">
+        <button type="button" onclick="getAnimal()">Calculate Your Animal</button>
+      </p>
+      <hr />
+      <div
+        class="result-wrapper"
+        id="animal-result-wrapper"
+        style="display: none"
+      >
+        <div class="result" id="animal-result"></div>
+      </div>
+      <script>
+        function getAnimal() {
+          let extroverted = 0;
+          let goofiness = 0;
+          let emote = 0;
+          let patience = 0;
+          let wrapper = document.getElementById("animal-result-wrapper");
+          // button does not work if anything isn't selected
+          if (
+            (!document.getElementById("q1-1").checked &&
+              !document.getElementById("q1-2").checked) ||
+            (!document.getElementById("q2-1").checked &&
+              !document.getElementById("q2-2").checked) ||
+            (!document.getElementById("q3-1").checked &&
+              !document.getElementById("q3-2").checked) ||
+            (!document.getElementById("q4-1").checked &&
+              !document.getElementById("q4-2").checked) ||
+            (!document.getElementById("q5-1").checked &&
+              !document.getElementById("q5-2").checked) ||
+            (!document.getElementById("q6-1").checked &&
+              !document.getElementById("q6-2").checked) ||
+            (!document.getElementById("q7-1").checked &&
+              !document.getElementById("q7-2").checked) ||
+            (!document.getElementById("q8-1").checked &&
+              !document.getElementById("q8-2").checked) ||
+            (!document.getElementById("q9-1").checked &&
+              !document.getElementById("q9-2").checked) ||
+            (!document.getElementById("q10-1").checked &&
+              !document.getElementById("q10-2").checked) ||
+            (!document.getElementById("q11-1").checked &&
+              !document.getElementById("q11-2").checked) ||
+            (!document.getElementById("q12-1").checked &&
+              !document.getElementById("q12-2").checked)
+          ) {
+            alert("Please answer all questions!");
+            return "";
+          }
+          extroverted += document.getElementById("q1-1").checked ? -1 : 1;
+          extroverted += document.getElementById("q5-1").checked ? -1 : 1;
+          extroverted += document.getElementById("q6-1").checked ? -1 : 1;
+          goofiness += document.getElementById("q2-1").checked ? 1 : -1;
+          goofiness += document.getElementById("q7-1").checked ? 1 : -1;
+          goofiness += document.getElementById("q8-1").checked ? 1 : -1;
+          emote += document.getElementById("q3-1").checked ? 1 : -1;
+          emote += document.getElementById("q11-1").checked ? -1 : 1;
+          emote += document.getElementById("q12-1").checked ? -1 : 1;
+          patience += document.getElementById("q4-1").checked ? 1 : -1;
+          patience += document.getElementById("q9-1").checked ? 1 : -1;
+          patience += document.getElementById("q10-1").checked ? -1 : 1;
+          document.getElementById("animal-result").innerHTML =
+            getAnimalPersonality(extroverted, goofiness, emote, patience);
+          wrapper.style.display = "block";
+        }
+        function getAnimalPersonality(extroverted, goofiness, emote, patience) {
+          // outgoing, goofy, emotional, patience
+          if (extroverted > 0 && goofiness > 0 && emote > 0 && patience > 0) {
+            return "You are an otter 🦦!";
+          }
+          // outgoing, goofy, emotional, impatient
+          if (extroverted > 0 && goofiness > 0 && emote > 0 && patience < 0) {
+            return "You are a seal 🦭!";
+          }
+          // outgoing, goofy, logical, impatient
+          if (extroverted > 0 && goofiness > 0 && emote < 0 && patience < 0) {
+            return "You are a cat 🐈!";
+          }
+          // outgoing, goofy, logical, patient
+          if (extroverted > 0 && goofiness > 0 && emote < 0 && patience > 0) {
+            return "You are a koala 🐨!";
+          }
+          // outgoing, serious, emotional, patient
+          if (extroverted > 0 && goofiness < 0 && emote > 0 && patience > 0) {
+            return "You are a horse 🐴!";
+          }
+          // outgoing, serious, emotional, impatient
+          if (extroverted > 0 && goofiness < 0 && emote > 0 && patience < 0) {
+            return "You are a lion 🦁!";
+          }
+          // outgoing, serious, logical, patient
+          if (extroverted > 0 && goofiness < 0 && emote < 0 && patience > 0) {
+            return "You are a penguin 🐧!";
+          }
+          // outgoing, serious, logical, impatient
+          if (extroverted > 0 && goofiness < 0 && emote < 0 && patience < 0) {
+            return "You are a bear 🐻!";
+          }
+          // shy, goofy, emotional, patient
+          if (extroverted < 0 && goofiness > 0 && emote > 0 && patience > 0) {
+            return "You are a sloth 🦥!";
+          }
+          // shy, goofy, emotional, impatient
+          if (extroverted < 0 && goofiness > 0 && emote > 0 && patience < 0) {
+            return "You are a hippo 🦛!";
+          }
+          // shy, goofy, logical, patient
+          if (extroverted < 0 && goofiness > 0 && emote < 0 && patience > 0) {
+            return "You are a fox 🦊!";
+          }
+          // shy, goofy, logical, impatient
+          if (extroverted < 0 && goofiness > 0 && emote < 0 && patience < 0) {
+            return "You are a racoon 🦝!";
+          }
+          // shy, serious, emotional, patient
+          if (extroverted < 0 && goofiness < 0 && emote > 0 && patience > 0) {
+            return "You are a panda 🐼!";
+          }
+          // shy, serious, emotional, impatient
+          if (extroverted < 0 && goofiness < 0 && emote > 0 && patience < 0) {
+            return "You are a bat 🦇!";
+          }
+          // shy, serious, logical, patient
+          if (extroverted < 0 && goofiness < 0 && emote < 0 && patience > 0) {
+            return "You are an owl 🦉!";
+          }
+          // shy, serious, logical, impatient
+          if (extroverted < 0 && goofiness < 0 && emote < 0 && patience < 0) {
+            return "You are a rabbit 🐇!";
+          }
+          // default case
+          return "You are an enigma 😵...";
+        }
+      </script>
+    </div>
+  </body>
+</html>
+
