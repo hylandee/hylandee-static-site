@@ -1,0 +1,15 @@
+# Static site files
+*.log
+.DS_Store
+Thumbs.db
+
+# Browser cache
+.cache/
+*.swp
+*.swo
+
+# Development
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Hylandee Auth</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="../index.html" class="home-link">Hylandee</a> - My Profile</h1>
+            <nav id="nav">
+                <button id="back-to-auth" class="tab">← Back</button>
+                <button id="logout-btn">Logout</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Profile View -->
+            <div id="profile-section" class="form-section">
+                <h2>My Profile</h2>
+                <div id="profile-info" class="profile-info">
+                    <div class="info-item">
+                        <strong>User ID:</strong> <span id="profile-id"></span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Username:</strong> <span id="profile-username"></span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Member Since:</strong> <span id="profile-created"></span>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button id="edit-username-btn" class="btn btn-secondary">Change Username</button>
+                    <button id="change-password-btn" class="btn btn-secondary">Change Password</button>
+                    <button id="delete-account-btn" class="btn btn-danger">Delete Account</button>
+                </div>
+            </div>
+
+            <!-- Edit Username Form -->
+            <div id="edit-username-section" class="form-section hidden">
+                <h2>Change Username</h2>
+                <form id="edit-username-form">
+                    <div class="form-group">
+                        <label for="new-username">New Username:</label>
+                        <input type="text" id="new-username" required minlength="3" maxlength="50">
+                        <small>3-50 characters, letters, numbers, underscores, hyphens only</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Update Username</button>
+                        <button type="button" id="cancel-username-edit" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Change Password Form -->
+            <div id="change-password-section" class="form-section hidden">
+                <h2>Change Password</h2>
+                <form id="change-password-form">
+                    <div class="form-group">
+                        <label for="current-password">Current Password:</label>
+                        <input type="password" id="current-password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-password">New Password:</label>
+                        <input type="password" id="new-password" required minlength="8">
+                        <small>At least 8 characters, must include uppercase, lowercase, and a number/symbol</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Change Password</button>
+                        <button type="button" id="cancel-password-change" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Delete Account Confirmation -->
+            <div id="delete-account-section" class="form-section hidden">
+                <h2>Delete Account</h2>
+                <div class="warning-message">
+                    <p><strong>Warning:</strong> This action cannot be undone. All your data will be permanently deleted.</p>
+                </div>
+
+                <form id="delete-account-form">
+                    <div class="form-group">
+                        <label for="delete-password">Enter your password to confirm:</label>
+                        <input type="password" id="delete-password" required>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-danger">Delete My Account</button>
+                        <button type="button" id="cancel-delete" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Messages -->
+            <div id="messages" class="messages"></div>
+        </main>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>
