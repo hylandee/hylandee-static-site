@@ -371,9 +371,21 @@ function initProfilePage() {
 async function loadProfile() {
     try {
         const profile = await getProfile();
+        const role = profile.role || 'Customer';
+        const roleRow = document.getElementById('profile-role-row');
+
         document.getElementById('profile-id').textContent = profile.id;
         document.getElementById('profile-username').textContent = profile.username;
+        document.getElementById('profile-role').textContent = role;
         document.getElementById('profile-created').textContent = new Date(profile.created_at).toLocaleDateString();
+
+        if (roleRow) {
+            if (role === 'Customer') {
+                roleRow.classList.add('hidden');
+            } else {
+                roleRow.classList.remove('hidden');
+            }
+        }
     } catch (error) {
         showMessage('Failed to load profile. Please log in again.', 'error');
         setTimeout(() => {
