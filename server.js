@@ -6,13 +6,10 @@ const PORT = 3002;
 
 // Proxy API requests to the Rust server
 app.use('/api', createProxyMiddleware({
-  target: 'http://127.0.0.1:3000',
+  target: 'http://127.0.0.1:3000/api',
   changeOrigin: true,
   proxyTimeout: 10000,
   timeout: 10000,
-  pathRewrite: {
-    '^/api': '', // remove /api prefix when forwarding to Rust server
-  },
   onError(err, req, res) {
     console.error('Proxy error:', err.message);
     if (!res.headersSent) {
