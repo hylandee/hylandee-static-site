@@ -22,6 +22,7 @@ A vanilla HTML/CSS/JavaScript frontend for the Rust authentication API.
 ## Setup
 
 1. **Start the Rust API server** (make sure it's running on `http://127.0.0.1:3000`):
+
    ```bash
    cd /Users/dylan/dev/printedin3d-rs
    cargo run
@@ -51,6 +52,7 @@ A vanilla HTML/CSS/JavaScript frontend for the Rust authentication API.
 ## Browser Compatibility
 
 Works in all modern browsers that support:
+
 - ES6+ JavaScript
 - Fetch API
 - CSS Grid/Flexbox
