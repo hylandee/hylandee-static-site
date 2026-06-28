@@ -1,0 +1,27 @@
+{
+  "name": "cdk",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "prettier --write . && tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "deploy": "cdk deploy"
+  },
+  "devDependencies": {
+    "@types/jest": "^30",
+    "@types/node": "^24.10.1",
+    "aws-cdk": "2.1128.1",
+    "jest": "^30",
+    "prettier": "^3.9.1",
+    "ts-jest": "^29",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.9.3"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.260.0",
+    "constructs": "^10.5.0"
+  }
+}
