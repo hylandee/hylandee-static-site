@@ -11,9 +11,9 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
-const DOMAIN = 's3.hylandee.com';
+const DOMAIN = 'hylandee.com';
 const CERT_ARN =
-  'arn:aws:acm:us-east-1:320326036945:certificate/b9b2c3fc-c987-4237-9e29-f36b8a6a2ba1';
+  'arn:aws:acm:us-east-1:320326036945:certificate/4253ef1f-471d-4a6d-89f0-dc9af7b81076';
 
 export class HylandeeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -139,7 +139,7 @@ export class HylandeeStack extends cdk.Stack {
       },
       defaultRootObject: 'index.html',
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
-      domainNames: [DOMAIN],
+      domainNames: [DOMAIN, 'www.hylandee.com'],
       certificate,
     });
 
