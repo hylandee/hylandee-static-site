@@ -364,7 +364,6 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;gap:.6rem;flex-wrap:wrap;margin-top:.5rem;">
         <h2 id="workout-heading" style="font-weight:700;font-size:1.25rem;display:flex;align-items:center;gap:.45rem;"></h2>
         <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-          <button class="btn btn-ghost btn-sm" id="workout-save-btn" type="button">Save</button>
           <button class="btn btn-ghost btn-sm" id="workout-discard-btn" type="button">Discard</button>
         </div>
       </div>
@@ -1295,8 +1294,6 @@
         autosaveInFlight = false;
       }
     }
-
-    document.getElementById('workout-save-btn').addEventListener('click', function() { doSave(true); });
 
     // ── Notes autosave ─────────────────────────────────────────────────────────
     document.getElementById('workout-notes').addEventListener('input', function() {
