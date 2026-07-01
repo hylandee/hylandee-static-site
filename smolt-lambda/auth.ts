@@ -6,7 +6,7 @@ import { err, json, JSON_CT, parseBody, type LambdaEvent, type LambdaResult } fr
 
 const SESSION_COOKIE = 'stronglifts_session';
 const SESSION_MAX_AGE = 180 * 24 * 60 * 60; // seconds, matches Go app
-const BCRYPT_COST = 12;
+const BCRYPT_COST = Number(process.env.BCRYPT_COST ?? '12');
 
 // ── Cookie helpers ──────────────────────────────────────────────────────────
 
