@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lifts on Lambda — SL5×5</title>
+  <script>
+    (function() {
+      var THEMES = ['light','dark','forest','sunset','dark_hc'];
+      var t = localStorage.getItem('smolt-theme') || 'light';
+      if (THEMES.indexOf(t) === -1) t = 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }
+    :root {
+      --bg: #f5f7fb; --surface: #ffffff; --border: #d8dfeb;
+      --accent: #2f6fed; --accent-dim: #1d56c6;
+      --green: #16a34a; --red: #dc2626; --yellow: #ca8a04;
+      --text: #0f172a; --muted: #55627a; --radius: 12px;
+    }
+    html[data-theme="dark"] {
+      --bg: #0f1117; --surface: #1c1f2e; --border: #2a2d3e;
+      --accent: #6c63ff; --accent-dim: #4b44cc;
+      --green: #22c55e; --red: #ef4444; --yellow: #f59e0b;
+      --text: #e2e8f0; --muted: #94a3b8;
+    }
+    html[data-theme="forest"] {
+      --bg: #eef4ef; --surface: #f9fcf7; --border: #c7d8c6;
+      --accent: #1f7a4b; --accent-dim: #155a37;
+      --green: #15803d; --red: #b91c1c; --yellow: #a16207;
+      --text: #143322; --muted: #486557;
+    }
+    html[data-theme="sunset"] {
+      --bg: #fff3eb; --surface: #ffffff; --border: #f3c8ae;
+      --accent: #d94f2b; --accent-dim: #af3d1e;
+      --green: #2f855a; --red: #c53030; --yellow: #b7791f;
+      --text: #402018; --muted: #7a4a3a;
+    }
+    html[data-theme="dark_hc"] {
+      --bg: #000; --surface: #0d0d0d; --border: #4d4d4d;
+      --accent: #00e5ff; --accent-dim: #00b8cc;
+      --green: #39ff88; --red: #ff4d4d; --yellow: #ffd447;
+      --text: #fff; --muted: #d1d5db;
+    }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px; min-height: 100dvh;
+    }
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+      background: var(--surface); position: sticky; top: 0; z-index: 30;
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; letter-spacing: .04em; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--accent); }
+    .nav-actions { display: flex; gap: .75rem; align-items: center; }
+    .username { color: var(--muted); font-size: .875rem; }
+    .page { max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem;
+    }
+    .card-title { font-weight: 700; font-size: 1rem; margin-bottom: .25rem; }
+    .card-subtitle { color: var(--muted); font-size: .85rem; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: .55rem 1.25rem; border-radius: 8px; font-size: .9rem;
+      font-weight: 600; cursor: pointer; border: none;
+      transition: opacity .15s, transform .1s; text-decoration: none;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-dim); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+    .btn-sm { padding: .35rem .9rem; font-size: .8rem; }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-success { background: var(--green); color: #000; font-weight: 700; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .badge {
+      display: inline-block; padding: .2rem .65rem; border-radius: 999px;
+      font-size: .75rem; font-weight: 600;
+    }
+    .badge-a { background: #6c63ff33; color: var(--accent); }
+    .badge-b { background: #22c55e22; color: var(--green); }
+    .exercise-list { list-style: none; margin-top: .75rem; display: flex; flex-direction: column; gap: .5rem; }
+    .exercise-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .75rem 1rem; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+    }
+    .exercise-name { font-weight: 600; font-size: .95rem; }
+    .exercise-weight { color: var(--accent); font-weight: 700; font-size: 1rem; cursor: pointer; }
+    .exercise-weight:hover { text-decoration: underline; }
+    .sets-grid { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .75rem; }
+    .set-bubble {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem; cursor: pointer;
+      border: 2px solid var(--border); background: var(--bg); color: var(--muted);
+      transition: background .15s, border-color .15s, color .15s, transform .1s;
+      user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    .set-bubble:hover { border-color: var(--accent); color: var(--text); }
+    .set-bubble.complete { background: var(--green); border-color: var(--green); color: #000; }
+    .set-bubble.failed  { background: var(--red);   border-color: var(--red);   color: #fff; }
+    .set-bubble:active  { transform: scale(.93); }
+    .warmup-chips { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .5rem; }
+    .warmup-chip {
+      padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 600;
+      background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+      color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+      cursor: pointer;
+    }
+    .warmup-chip.done { background: var(--green); border-color: var(--green); color: #000; }
+    /* Inline weight editor */
+    .weight-edit-wrap { display: inline-flex; align-items: center; gap: .35rem; }
+    .weight-edit-input {
+      width: 70px; background: var(--bg); color: var(--text);
+      border: 1px solid var(--accent); border-radius: 6px;
+      padding: .2rem .4rem; font-size: .95rem; font-weight: 700; font-family: inherit;
+    }
+    .weight-edit-input:focus { outline: none; }
+    .weight-edit-ok {
+      background: var(--accent); color: #fff; border: none; border-radius: 6px;
+      padding: .2rem .5rem; font-size: .8rem; font-weight: 700; cursor: pointer;
+    }
+    .plates-row { font-size: .78rem; color: var(--muted); margin-top: .3rem; min-height: 1.2em; }
+    /* Plate calculator popover */
+    .plate-popover-backdrop { position:fixed; inset:0; z-index:100; }
+    .plate-popover { position:absolute; z-index:101; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.75rem 1rem; box-shadow:0 4px 20px rgba(0,0,0,.2); min-width:200px; }
+    .plate-stack { display:flex; align-items:center; gap:1px; height:72px; margin:.4rem 0; }
+    .plate-sleeve { width:20px; height:10px; background:#888; border-radius:0 3px 3px 0; flex-shrink:0; }
+    .plate { width:14px; border-radius:3px; flex-shrink:0; }
+    .plate[data-plate="45lb"] { background:#1565C0; height:64px; }
+    .plate[data-plate="35lb"] { background:#F9A825; height:56px; }
+    .plate[data-plate="25lb"] { background:#2E7D32; height:48px; }
+    .plate[data-plate="10lb"] { background:#E0E0E0; border:1px solid #999; height:38px; width:9px; }
+    .plate[data-plate="5lb"]  { background:#C62828; height:30px; width:7px; }
+    .plate[data-plate="2.5lb"]{ background:#212121; border:1px solid #555; height:22px; width:7px; }
+    .plate-key { display:flex; flex-wrap:wrap; gap:6px; margin-top:.4rem; }
+    .plate-key-item { display:flex; align-items:center; gap:4px; font-size:.75rem; color:var(--text); }
+    .plate-key-swatch { width:10px; height:18px; border-radius:2px; flex-shrink:0; }
+    .form-group { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1rem; }
+    label { font-size: .85rem; color: var(--muted); }
+    input[type=text], input[type=password], input[type=number], textarea {
+      background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: .65rem .9rem; font-size: 1rem; width: 100%;
+      font-family: inherit;
+    }
+    textarea { resize: vertical; min-height: 72px; }
+    input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    .alert { padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: .9rem; }
+    .alert-error { background: #ef444422; border: 1px solid #ef444455; color: var(--red); }
+    .alert-success { background: #22c55e22; border: 1px solid #22c55e55; color: var(--green); }
+    .tab-row { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem; }
+    .tab-btn {
+      flex: 1; padding: .6rem 1rem; background: none; border: none;
+      font-weight: 600; font-size: .9rem; color: var(--muted); cursor: pointer;
+      border-bottom: 2px solid transparent; transition: all .15s;
+    }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .open-banner {
+      background: color-mix(in srgb, var(--yellow) 12%, var(--surface));
+      border: 1px solid color-mix(in srgb, var(--yellow) 60%, transparent);
+      border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    }
+    .open-banner-info { font-weight: 700; color: var(--yellow); }
+    .open-banner-sub  { font-size: .8rem; color: var(--muted); margin-top: .1rem; }
+    .workout-exercise { margin-bottom: 2rem; }
+    .workout-exercise-header {
+      display: flex; align-items: baseline; justify-content: space-between; margin-bottom: .25rem;
+    }
+    .workout-exercise-name { font-weight: 700; font-size: 1.05rem; }
+    .workout-exercise-meta { color: var(--muted); font-size: .82rem; margin-bottom: .4rem; }
+    .workout-exercise-weight { color: var(--accent); font-weight: 700; cursor: pointer; }
+    .workout-exercise-weight:hover { text-decoration: underline; }
+    .workout-timer {
+      position: sticky; top: 4.5rem; z-index: 10;
+      width: fit-content; margin: 0 auto 1.5rem;
+      padding: .4rem 1.1rem; font-weight: 800; border-radius: 999px;
+      border: 1px solid rgba(0,0,0,.08); box-shadow: 0 2px 8px rgba(0,0,0,.12);
+      display: none; align-items: center; gap: .6rem;
+    }
+    .workout-timer.visible { display: flex; }
+    .wt-label { font-size: .85rem; opacity: .95; }
+    .wt-count { font-size: 1.2rem; letter-spacing: .03em; min-width: 5ch; text-align: center; }
+    .wt-green  { background: rgba(34,197,94,.55);  color: #06210f; }
+    .wt-yellow { background: rgba(250,204,21,.6);  color: #3a2c00; }
+    .wt-red    { background: rgba(239,68,68,.7);   color: #fff; }
+    @keyframes timer-flash { 0%,100% { opacity:1; } 50% { opacity:.65; } }
+    .wt-flash  { animation: timer-flash 1s ease-in-out infinite; }
+    .autosave-status { font-size: .78rem; color: var(--muted); }
+    .notes-area { margin-top: 1.5rem; }
+    .notes-area label { display: block; font-weight: 600; font-size: .85rem; margin-bottom: .4rem; color: var(--muted); }
+    .spinner {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 3px solid var(--border); border-top-color: var(--accent);
+      animation: spin .7s linear infinite; margin: 4rem auto; display: block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #toast-stack {
+      position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
+      z-index: 9999; display: flex; flex-direction: column-reverse; gap: .5rem;
+      align-items: center; pointer-events: none; width: min(92vw, 380px);
+    }
+    .toast {
+      pointer-events: auto; background: var(--surface); border: 1px solid var(--border);
+      border-left: 4px solid var(--red); border-radius: var(--radius);
+      box-shadow: 0 4px 16px rgba(0,0,0,.18); padding: .65rem 1rem;
+      font-size: .9rem; color: var(--text); display: flex; align-items: center;
+      gap: .6rem; width: 100%; animation: toast-in .22s ease;
+    }
+    .toast.success { border-left-color: var(--green); }
+    .toast-msg { flex: 1; }
+    .toast-x { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; line-height: 1; }
+    @keyframes toast-in { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+    #confirm-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 1rem;
+    }
+    #confirm-backdrop[hidden] { display: none !important; }
+    #confirm-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: 0 8px 32px rgba(0,0,0,.25);
+      padding: 1.5rem; width: min(92vw, 360px);
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    #confirm-title { font-weight: 700; font-size: 1rem; }
+    #confirm-msg   { font-size: .9rem; color: var(--muted); }
+    #confirm-actions { display: flex; gap: .6rem; justify-content: flex-end; }
+    .theme-wrap { position: relative; }
+    .theme-menu {
+      position: absolute; right: 0; top: calc(100% + .4rem);
+      min-width: 160px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 10px;
+      box-shadow: 0 10px 30px #00000022; padding: .4rem; z-index: 20;
+    }
+    .theme-opt {
+      width: 100%; border: 1px solid transparent; background: transparent;
+      color: var(--text); text-align: left; border-radius: 8px;
+      padding: .45rem .6rem; cursor: pointer; font-size: .85rem; display: block;
+    }
+    .theme-opt:hover { background: var(--bg); border-color: var(--border); }
+    .theme-opt.active { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+    /* Progress chart */
+    .chart-wrap { width: 100%; overflow-x: auto; }
+    .chart-svg { display: block; width: 100%; }
+    .chart-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+    .chart-dot { fill: var(--accent); }
+    .chart-axis { stroke: var(--border); stroke-width: 1; }
+    .chart-label { fill: var(--muted); font-size: 11px; }
+    .range-row { display: flex; gap: .4rem; margin-bottom: .75rem; flex-wrap: wrap; }
+    .range-btn {
+      padding: .3rem .7rem; border-radius: 6px; font-size: .8rem; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted);
+    }
+    .range-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    select {
+      background: var(--bg); color: var(--text); border: 1px solid var(--border);
+      border-radius: 8px; padding: .5rem .8rem; font-size: .9rem;
+      font-family: inherit; cursor: pointer; margin-bottom: .75rem;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+    /* Session detail */
+    .session-detail-set {
+      display: flex; align-items: center; gap: .5rem; padding: .4rem 0;
+      border-bottom: 1px solid var(--border); font-size: .875rem;
+    }
+    .session-detail-set:last-child { border-bottom: none; }
+    .sds-num { color: var(--muted); width: 2ch; text-align: right; flex-shrink: 0; }
+    .sds-reps { font-weight: 700; min-width: 3rem; }
+    .sds-weight { color: var(--accent); font-weight: 600; }
+    .sds-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .sds-dot.ok  { background: var(--green); }
+    .sds-dot.bad { background: var(--red); }
+    .sds-dot.skip { background: var(--border); }
+    @media (max-width: 480px) {
+      .card { padding: 1rem; }
+      .set-bubble { width: 46px; height: 46px; font-size: .8rem; }
+      nav { padding: .75rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="logo" href="/lifts-on-lambda"><span>Smolt</span>5×5 <span style="font-size:.65rem;color:var(--muted);margin-left:.15rem;">λ</span></a>
+    <div class="nav-actions">
+      <button class="btn btn-ghost btn-sm" id="nav-progress" hidden type="button">Progress</button>
+      <div class="theme-wrap">
+        <button class="btn btn-ghost btn-sm" id="theme-btn" type="button">Theme</button>
+        <div id="theme-menu" class="theme-menu" hidden>
+          <button class="theme-opt" data-theme="light">Light</button>
+          <button class="theme-opt" data-theme="dark">Dark</button>
+          <button class="theme-opt" data-theme="forest">Forest</button>
+          <button class="theme-opt" data-theme="sunset">Sunset</button>
+          <button class="theme-opt" data-theme="dark_hc">Dark HC</button>
+        </div>
+      </div>
+      <span class="username" id="nav-username" hidden></span>
+      <button class="btn btn-ghost btn-sm" id="nav-logout" hidden type="button">Logout</button>
+    </div>
+  </nav>
+
+  <main class="page">
+
+    <!-- ── Loading ── -->
+    <div id="view-loading">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- ── Auth ── -->
+    <div id="view-auth" hidden>
+      <div class="card" style="max-width:380px;margin:2rem auto;">
+        <div class="tab-row">
+          <button class="tab-btn active" id="tab-login" type="button">Login</button>
+          <button class="tab-btn" id="tab-register" type="button">Register</button>
+        </div>
+        <div id="auth-error" class="alert alert-error" hidden></div>
+        <form id="form-login">
+          <div class="form-group">
+            <label for="login-user">Username</label>
+            <input type="text" id="login-user" autocomplete="username" required>
+          </div>
+          <div class="form-group">
+            <label for="login-pass">Password</label>
+            <input type="password" id="login-pass" autocomplete="current-password" required>
+          </div>
+          <button class="btn btn-primary" style="width:100%;margin-top:.25rem" type="submit" id="login-btn">Log in</button>
+        </form>
+        <form id="form-register" hidden>
+          <div class="form-group">
+            <label for="reg-user">Username</label>
+            <input type="text" id="reg-user" autocomplete="username" required minlength="3">
+          </div>
+          <div class="form-group">
+            <label for="reg-pass">Password (8+ chars)</label>
+            <input type="password" id="reg-pass" autocomplete="new-password" required minlength="8">
+          </div>
+          <button class="btn btn-primary" style="width:100%;margin-top:.25rem" type="submit" id="reg-btn">Create account</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── Onboarding ── -->
+    <div id="view-onboarding" hidden>
+      <h2 style="font-weight:700;font-size:1.25rem;margin-bottom:.5rem;">Welcome Setup</h2>
+      <div class="card-subtitle" style="margin-bottom:1rem;">Set your starting weights (lb). New to lifting? The defaults are a safe starting point.</div>
+      <div class="card">
+        <div id="onboard-error" class="alert alert-error" hidden></div>
+        <div id="onboard-fields"></div>
+        <button class="btn btn-primary" style="margin-top:.5rem;" id="onboard-btn">Start Training</button>
+      </div>
+    </div>
+
+    <!-- ── Dashboard ── -->
+    <div id="view-dashboard" hidden>
+      <h2 style="font-weight:700;font-size:1.25rem;margin-bottom:1.25rem;">Next Workout</h2>
+      <div id="dash-banner"></div>
+      <div id="dash-next"></div>
+      <div id="dash-history"></div>
+      <div id="dash-settings"></div>
+    </div>
+
+    <!-- ── Workout ── -->
+    <div id="view-workout" hidden>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;gap:.6rem;flex-wrap:wrap;margin-top:.5rem;">
+        <h2 id="workout-heading" style="font-weight:700;font-size:1.25rem;display:flex;align-items:center;gap:.45rem;"></h2>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" id="workout-save-btn" type="button">Save</button>
+          <span id="workout-autosave" class="autosave-status">--</span>
+          <button class="btn btn-ghost btn-sm" id="workout-discard-btn" type="button">Discard</button>
+        </div>
+      </div>
+      <div id="workout-timer" class="workout-timer wt-green">
+        <span class="wt-label">Rest</span>
+        <span class="wt-count" id="wt-count">00:00</span>
+      </div>
+      <div id="workout-exercises"></div>
+      <div class="notes-area">
+        <label for="workout-notes">Notes</label>
+        <textarea id="workout-notes" placeholder="How did it go?"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+        <button class="btn btn-success" id="workout-finish-btn" type="button">Complete Workout</button>
+      </div>
+    </div>
+
+    <!-- ── Session detail ── -->
+    <div id="view-session" hidden>
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;margin-top:.5rem;">
+        <button class="btn btn-ghost btn-sm" id="session-back-btn" type="button">← Back</button>
+        <h2 id="session-heading" style="font-weight:700;font-size:1.2rem;"></h2>
+      </div>
+      <div id="session-content"></div>
+    </div>
+
+    <!-- ── Progress charts ── -->
+    <div id="view-progress" hidden>
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;margin-top:.5rem;">
+        <button class="btn btn-ghost btn-sm" id="progress-back-btn" type="button">← Back</button>
+        <h2 style="font-weight:700;font-size:1.2rem;">Progress</h2>
+      </div>
+      <div class="card">
+        <select id="progress-exercise"></select>
+        <div class="range-row" id="progress-ranges">
+          <button class="range-btn" data-range="1M">1M</button>
+          <button class="range-btn" data-range="3M">3M</button>
+          <button class="range-btn" data-range="6M">6M</button>
+          <button class="range-btn active" data-range="all">All</button>
+        </div>
+        <div class="chart-wrap" id="chart-wrap">
+          <div class="card-subtitle" style="padding:2rem 0;text-align:center;">No data yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Finish ── -->
+    <div id="view-finish" hidden>
+      <div class="card" style="border-color:color-mix(in srgb,var(--green) 35%,var(--border));">
+        <div class="card-title" style="color:var(--green);margin-bottom:.35rem;">Workout Complete!</div>
+        <div id="finish-content"></div>
+        <button class="btn btn-primary" style="margin-top:1rem;" id="finish-back-btn" type="button">Back to Dashboard</button>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+  <div id="plate-backdrop" class="plate-popover-backdrop" hidden></div>
+  <div id="plate-popover" class="plate-popover" hidden>
+    <div class="plate-stack" id="plate-stack"></div>
+    <div id="plate-summary"></div>
+  </div>
+
+  <div id="confirm-backdrop" hidden>
+    <div id="confirm-box" role="dialog" aria-modal="true">
+      <div id="confirm-title"></div>
+      <div id="confirm-msg"></div>
+      <div id="confirm-actions">
+        <button class="btn btn-ghost btn-sm" id="confirm-cancel">Cancel</button>
+        <button class="btn btn-danger btn-sm" id="confirm-ok">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    'use strict';
+
+    // ── Constants ──────────────────────────────────────────────────────────────
+    var BARBELL_EXERCISES = { 'Squat':true, 'Bench Press':true, 'Deadlift':true, 'OHP':true, 'Barbell Row':true };
+    var EXERCISES = {
+      'Squat':       { defaultWeight: 45  },
+      'Bench Press': { defaultWeight: 45  },
+      'Barbell Row': { defaultWeight: 65  },
+      'OHP':         { defaultWeight: 45  },
+      'Deadlift':    { defaultWeight: 95  },
+    };
+    var EXERCISE_NAMES = Object.keys(EXERCISES);
+    var LB_PLATES = [45, 35, 25, 10, 5, 2.5];
+    var BAR_WEIGHT = 45;
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    var S = {
+      user:        null,
+      progress:    {},
+      next:        null,
+      sessions:    [],
+      active:      null,
+      finishData:  null,
+      history:     null,
+    };
+
+    // ── Theme ──────────────────────────────────────────────────────────────────
+    var THEMES = ['light','dark','forest','sunset','dark_hc'];
+    var themeBtn  = document.getElementById('theme-btn');
+    var themeMenu = document.getElementById('theme-menu');
+
+    function applyTheme(t) {
+      if (THEMES.indexOf(t) === -1) t = 'light';
+      localStorage.setItem('smolt-theme', t);
+      document.documentElement.setAttribute('data-theme', t);
+      themeMenu.querySelectorAll('.theme-opt').forEach(function(o) {
+        o.classList.toggle('active', o.dataset.theme === t);
+      });
+    }
+
+    themeBtn.addEventListener('click', function() { themeMenu.hidden = !themeMenu.hidden; });
+    document.addEventListener('click', function(e) {
+      if (!themeMenu.contains(e.target) && e.target !== themeBtn) themeMenu.hidden = true;
+    });
+    themeMenu.querySelectorAll('.theme-opt').forEach(function(o) {
+      o.addEventListener('click', function() { applyTheme(o.dataset.theme); themeMenu.hidden = true; });
+    });
+    applyTheme(localStorage.getItem('smolt-theme') || 'light');
+
+    // ── Toast ──────────────────────────────────────────────────────────────────
+    var toastStack = document.getElementById('toast-stack');
+    function showToast(msg, type) {
+      var el = document.createElement('div');
+      el.className = 'toast' + (type === 'success' ? ' success' : '');
+      el.innerHTML = '<span class="toast-msg">' + esc(msg) + '</span><button class="toast-x" aria-label="Dismiss">&times;</button>';
+      el.querySelector('.toast-x').onclick = function() { dismissToast(el); };
+      toastStack.appendChild(el);
+      setTimeout(function() { dismissToast(el); }, 4500);
+    }
+    function dismissToast(el) {
+      if (!el.parentNode) return;
+      el.style.opacity = '0'; el.style.transform = 'translateY(8px)';
+      el.style.transition = 'opacity .18s, transform .18s';
+      setTimeout(function() { el.parentNode && el.parentNode.removeChild(el); }, 200);
+    }
+
+    // ── Confirm ────────────────────────────────────────────────────────────────
+    var confirmBackdrop = document.getElementById('confirm-backdrop');
+    var confirmResolve  = null;
+    function closeConfirm(result) {
+      confirmBackdrop.hidden = true;
+      if (confirmResolve) { confirmResolve(result); confirmResolve = null; }
+    }
+    document.getElementById('confirm-ok').addEventListener('click', function() { closeConfirm(true); });
+    document.getElementById('confirm-cancel').addEventListener('click', function() { closeConfirm(false); });
+    confirmBackdrop.addEventListener('click', function(e) { if (e.target === confirmBackdrop) closeConfirm(false); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && !confirmBackdrop.hidden) closeConfirm(false); });
+
+    function smoltConfirm(title, msg, okLabel) {
+      return new Promise(function(resolve) {
+        document.getElementById('confirm-title').textContent = title;
+        document.getElementById('confirm-msg').textContent   = msg;
+        document.getElementById('confirm-ok').textContent    = okLabel || 'Confirm';
+        confirmBackdrop.hidden = false;
+        confirmResolve = resolve;
+        document.getElementById('confirm-cancel').focus();
+      });
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function esc(s) {
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function fmtDate(iso) {
+      if (!iso) return '';
+      return new Date(iso).toLocaleDateString([], { month:'short', day:'numeric', year:'numeric' });
+    }
+    function fmtTime(d) {
+      return d.toLocaleTimeString([], { hour:'numeric', minute:'2-digit', second:'2-digit' });
+    }
+    function fmtSecs(total) {
+      var m = Math.floor(total / 60), s = total % 60;
+      return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+
+    // ── Plate calculator ───────────────────────────────────────────────────────
+    var PLATE_COLORS = {
+      '45lb':'#1565C0','35lb':'#F9A825','25lb':'#2E7D32',
+      '10lb':'#E0E0E0','5lb':'#C62828','2.5lb':'#212121'
+    };
+    var PLATE_BORDER = { '10lb':true, '2.5lb':true };
+
+    function platesPerSide(totalWeight) {
+      var perSide = (totalWeight - BAR_WEIGHT) / 2;
+      if (perSide <= 0) return [];
+      var remaining = perSide;
+      var result = [];
+      for (var i = 0; i < LB_PLATES.length; i++) {
+        var p = LB_PLATES[i];
+        var count = Math.floor(remaining / p + 0.001);
+        if (count > 0) {
+          result.push({ weight: p, count: count });
+          remaining -= count * p;
+          if (remaining < 0.01) break;
+        }
+      }
+      return result;
+    }
+
+    function showPlatePopover(el, weight) {
+      var pop      = document.getElementById('plate-popover');
+      var backdrop = document.getElementById('plate-backdrop');
+
+      // Toggle off if clicking the same source
+      if (pop._source === el && !pop.hidden) { hidePlatePopover(); return; }
+      pop._source = el;
+
+      var plates = platesPerSide(weight);
+      var sleeve = '<div class="plate-sleeve"></div>';
+      var platesHtml = plates.map(function(p) {
+        var key = p.weight + 'lb';
+        return Array(p.count).fill(
+          '<div class="plate" data-plate="' + key + '" title="' + key + '"></div>'
+        ).join('');
+      }).join('');
+      document.getElementById('plate-stack').innerHTML = sleeve + platesHtml;
+
+      var keyEl = document.getElementById('plate-summary');
+      if (plates.length) {
+        var items = plates.map(function(p) {
+          var key    = p.weight + 'lb';
+          var color  = PLATE_COLORS[key] || '#888';
+          var border = PLATE_BORDER[key] ? ';border:1px solid #999' : '';
+          return '<span class="plate-key-item">' +
+            '<span class="plate-key-swatch" style="background:' + color + border + '"></span>' +
+            (p.count === 1 ? p.weight : p.count + '×' + p.weight) + ' lb' +
+            '</span>';
+        });
+        keyEl.className = 'plate-key';
+        keyEl.innerHTML = items.join('');
+      } else {
+        keyEl.className = '';
+        keyEl.textContent = 'Just the bar (45 lb)';
+      }
+
+      // Position below the clicked element
+      var rect = el.getBoundingClientRect();
+      var top  = rect.bottom + window.scrollY + 8;
+      var left = rect.left + window.scrollX - 60;
+      left = Math.max(8, Math.min(left, window.innerWidth - 224));
+      pop.style.top  = top + 'px';
+      pop.style.left = left + 'px';
+
+      backdrop.hidden = false;
+      pop.hidden = false;
+    }
+
+    function hidePlatePopover() {
+      var pop = document.getElementById('plate-popover');
+      var bd  = document.getElementById('plate-backdrop');
+      pop.hidden = true; bd.hidden = true; pop._source = null;
+    }
+
+    document.getElementById('plate-backdrop').addEventListener('click', hidePlatePopover);
+
+    // Open plate popover on any [data-weight] click
+    document.addEventListener('click', function(e) {
+      var el = e.target.closest('[data-weight]');
+      if (!el) return;
+      e.stopPropagation();
+      showPlatePopover(el, parseFloat(el.dataset.weight));
+    });
+
+    // ── Warmup sets ────────────────────────────────────────────────────────────
+    function warmupSets(exerciseName, workWeight) {
+      if (!BARBELL_EXERCISES[exerciseName]) return [];
+      var first = 135, step = 90;
+      if (workWeight <= first) return [];
+      var sets = [];
+      for (var w = first; w < workWeight; w += step) {
+        sets.push({ weight: w, reps: 2 });
+      }
+      return sets;
+    }
+
+    function renderWarmupChips(exerciseName, workWeight) {
+      var sets = warmupSets(exerciseName, workWeight);
+      if (!sets.length) return '';
+      return '<div class="warmup-chips">' +
+        sets.map(function(s) {
+          return '<button type="button" class="warmup-chip" onclick="this.classList.toggle(\'done\')">' + s.weight + '×' + s.reps + '</button>';
+        }).join('') +
+        '</div>';
+    }
+
+    // ── API ────────────────────────────────────────────────────────────────────
+    var CT = { 'Content-Type': 'application/json' };
+
+    async function apiCall(url, opts) {
+      var res = await fetch(url, opts);
+      var data = null;
+      try { data = await res.json(); } catch (_) {}
+      return { ok: res.ok, status: res.status, data: data };
+    }
+
+    var api = {
+      me:              function() { return apiCall('/api/me'); },
+      login:           function(u,p) { return apiCall('/api/login',    {method:'POST',headers:CT,body:JSON.stringify({username:u,password:p})}); },
+      register:        function(u,p) { return apiCall('/api/register', {method:'POST',headers:CT,body:JSON.stringify({username:u,password:p})}); },
+      logout:          function() { return apiCall('/api/logout', {method:'POST'}); },
+      nextWorkout:     function() { return apiCall('/api/workout/next'); },
+      listSessions:    function() { return apiCall('/api/workout/sessions'); },
+      startSession:    function(body) { return apiCall('/api/workout/sessions', {method:'POST',headers:CT,body:JSON.stringify(body)}); },
+      getSession:      function(id) { return apiCall('/api/workout/sessions/'+id); },
+      saveSets:        function(id,sets) { return apiCall('/api/workout/sessions/'+id+'/sets',   {method:'POST',headers:CT,body:JSON.stringify({sets:sets})}); },
+      patchNotes:      function(id,notes) { return apiCall('/api/workout/sessions/'+id,         {method:'PATCH',headers:CT,body:JSON.stringify({notes:notes})}); },
+      finishSession:   function(id,sets) { return apiCall('/api/workout/sessions/'+id+'/finish', {method:'POST',headers:CT,body:JSON.stringify({sets:sets})}); },
+      deleteSession:   function(id) { return apiCall('/api/workout/sessions/'+id, {method:'DELETE'}); },
+      getProgress:     function() { return apiCall('/api/workout/progress'); },
+      progressHistory: function() { return apiCall('/api/workout/progress/history'); },
+      seedProgress:    function(w) { return apiCall('/api/workout/progress/seed', {method:'POST',headers:CT,body:JSON.stringify({startWeights:w})}); },
+      deload:          function(name) { return apiCall('/api/workout/progress/'+encodeURIComponent(name)+'/deload', {method:'POST'}); },
+      skipIncrement:   function(name,skip) { return apiCall('/api/workout/progress/'+encodeURIComponent(name)+'/skip', {method:'POST',headers:CT,body:JSON.stringify({skip:skip})}); },
+      exportBackup:    function() { return apiCall('/api/backup'); },
+      importBackup:    function(data) { return apiCall('/api/backup', {method:'POST',headers:CT,body:JSON.stringify(data)}); },
+    };
+
+    // ── View router ────────────────────────────────────────────────────────────
+    var VIEWS = ['loading','auth','onboarding','dashboard','workout','session','progress','finish'];
+    function showView(name) {
+      VIEWS.forEach(function(v) {
+        document.getElementById('view-' + v).hidden = (v !== name);
+      });
+      var inApp = ['dashboard','workout','session','progress','finish'].indexOf(name) !== -1;
+      document.getElementById('nav-progress').hidden = !inApp;
+    }
+
+    // ── Nav ────────────────────────────────────────────────────────────────────
+    var navUsername = document.getElementById('nav-username');
+    var navLogout   = document.getElementById('nav-logout');
+
+    function setNavUser(user) {
+      if (user) {
+        navUsername.textContent = user.username;
+        navUsername.hidden = false;
+        navLogout.hidden   = false;
+      } else {
+        navUsername.hidden = true;
+        navLogout.hidden   = true;
+      }
+    }
+
+    navLogout.addEventListener('click', async function() {
+      await api.logout();
+      S.user = null;
+      setNavUser(null);
+      showView('auth');
+    });
+
+    document.getElementById('nav-progress').addEventListener('click', function() {
+      openProgressView();
+    });
+
+    // ── Auth ───────────────────────────────────────────────────────────────────
+    var authError    = document.getElementById('auth-error');
+    var formLogin    = document.getElementById('form-login');
+    var formRegister = document.getElementById('form-register');
+
+    function setAuthTab(tab) {
+      formLogin.hidden    = tab !== 'login';
+      formRegister.hidden = tab !== 'register';
+      document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
+      document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+      authError.hidden = true;
+    }
+    document.getElementById('tab-login').addEventListener('click',    function() { setAuthTab('login'); });
+    document.getElementById('tab-register').addEventListener('click', function() { setAuthTab('register'); });
+
+    function showAuthError(msg) { authError.textContent = msg; authError.hidden = false; }
+
+    formLogin.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var u = document.getElementById('login-user').value.trim();
+      var p = document.getElementById('login-pass').value;
+      var btn = document.getElementById('login-btn');
+      btn.disabled = true; btn.textContent = 'Logging in…';
+      authError.hidden = true;
+      try {
+        var r = await api.login(u, p);
+        if (!r.ok) { showAuthError(r.data && r.data.error ? r.data.error : 'Login failed'); return; }
+        S.user = { username: r.data.username };
+        setNavUser(S.user);
+        await loadDashboardData();
+      } finally { btn.disabled = false; btn.textContent = 'Log in'; }
+    });
+
+    formRegister.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var u = document.getElementById('reg-user').value.trim();
+      var p = document.getElementById('reg-pass').value;
+      var btn = document.getElementById('reg-btn');
+      btn.disabled = true; btn.textContent = 'Creating…';
+      authError.hidden = true;
+      try {
+        var r = await api.register(u, p);
+        if (!r.ok) { showAuthError(r.data && r.data.error ? r.data.error : 'Registration failed'); return; }
+        S.user = { username: r.data.username };
+        setNavUser(S.user);
+        await loadDashboardData();
+      } finally { btn.disabled = false; btn.textContent = 'Create account'; }
+    });
+
+    // ── Onboarding ─────────────────────────────────────────────────────────────
+    function renderOnboarding() {
+      var el = document.getElementById('onboard-fields');
+      el.innerHTML = EXERCISE_NAMES.map(function(name) {
+        var id = 'ob-' + name.replace(/\s+/g,'_');
+        var def = EXERCISES[name].defaultWeight;
+        return '<div class="form-group">' +
+               '<label for="' + id + '">' + esc(name) + '</label>' +
+               '<input type="number" id="' + id + '" value="' + def + '" min="1" max="1000" step="5" inputmode="decimal">' +
+               '</div>';
+      }).join('');
+    }
+
+    document.getElementById('onboard-btn').addEventListener('click', async function() {
+      var weights = {};
+      EXERCISE_NAMES.forEach(function(name) {
+        var id = 'ob-' + name.replace(/\s+/g,'_');
+        weights[name] = parseFloat(document.getElementById(id).value) || EXERCISES[name].defaultWeight;
+      });
+      var errEl = document.getElementById('onboard-error');
+      errEl.hidden = true;
+      var btn = document.getElementById('onboard-btn');
+      btn.disabled = true; btn.textContent = 'Saving…';
+      try {
+        var r = await api.seedProgress(weights);
+        if (!r.ok) { errEl.textContent = 'Failed to save. Try again.'; errEl.hidden = false; return; }
+        await loadDashboardData();
+      } finally { btn.disabled = false; btn.textContent = 'Start Training'; }
+    });
+
+    // ── Dashboard ──────────────────────────────────────────────────────────────
+    async function loadDashboardData() {
+      showView('loading');
+      try {
+        var results = await Promise.all([
+          api.nextWorkout(),
+          api.getProgress(),
+          api.listSessions(),
+        ]);
+        var nextRes = results[0], progressRes = results[1], sessionsRes = results[2];
+        if (progressRes.ok)  S.progress = progressRes.data.progress  || {};
+        if (nextRes.ok)      S.next     = nextRes.data;
+        if (sessionsRes.ok)  S.sessions = sessionsRes.data.sessions   || [];
+
+        if (Object.keys(S.progress).length === 0) {
+          renderOnboarding();
+          showView('onboarding');
+        } else {
+          renderDashboard();
+          showView('dashboard');
+        }
+      } catch (e) {
+        showToast('Failed to load data.');
+        showView('dashboard');
+      }
+    }
+
+    function renderDashboard() {
+      var openSession = S.sessions.find(function(s) { return !s.finishedAt; });
+
+      // Open banner
+      var bannerEl = document.getElementById('dash-banner');
+      if (openSession) {
+        bannerEl.innerHTML =
+          '<div class="open-banner">' +
+          '<div><div class="open-banner-info">Workout ' + esc(openSession.workoutName) + ' in progress</div>' +
+          '<div class="open-banner-sub">Started ' + fmtDate(openSession.createdAt) + '</div></div>' +
+          '<div style="display:flex;gap:.5rem;flex-shrink:0;">' +
+          '<button class="btn btn-primary btn-sm" data-action="resume" data-id="' + esc(openSession.sessionId) + '">Resume</button>' +
+          '<button class="btn btn-ghost btn-sm" data-action="discard" data-id="' + esc(openSession.sessionId) + '">Discard</button>' +
+          '</div></div>';
+      } else {
+        bannerEl.innerHTML = '';
+      }
+
+      // Next workout card
+      var next = S.next;
+      var nextEl = document.getElementById('dash-next');
+      if (next) {
+        var badgeCls = next.program === 'A' ? 'badge-a' : 'badge-b';
+        var startDisabled = openSession ? ' disabled' : '';
+        var exRows = (next.exercises || []).map(function(ex) {
+          var prog = S.progress[ex.name] || {};
+          var failStreak = prog.failStreak || 0;
+          var skipNext   = prog.skipNextIncrement || false;
+          var streakBadge = failStreak > 0
+            ? '<span style="font-size:.7rem;color:var(--red);margin-left:.3rem;">' + failStreak + ' fail' + (failStreak > 1 ? 's' : '') + '</span>'
+            : '';
+          var skipBadge = skipNext
+            ? '<span style="font-size:.7rem;color:var(--yellow);margin-left:.3rem;">skip+</span>'
+            : '';
+          return '<li class="exercise-row" style="flex-wrap:wrap;gap:.4rem;">' +
+            '<div style="flex:1;min-width:0;">' +
+              '<div style="display:flex;align-items:center;gap:.25rem;">' +
+                '<span class="exercise-name">' + esc(ex.name) + '</span>' + streakBadge + skipBadge +
+              '</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0;">' +
+              '<span class="exercise-weight" data-weight="' + ex.weight + '">' + ex.weight + ' lb</span>' +
+              '<button class="btn btn-ghost btn-sm" data-action="deload" data-name="' + esc(ex.name) + '"' + startDisabled + ' title="Deload 10%">−10%</button>' +
+              '<button class="btn btn-ghost btn-sm" data-action="skip" data-name="' + esc(ex.name) + '" data-skip="' + (skipNext ? '0' : '1') + '"' + startDisabled + ' title="' + (skipNext ? 'Resume increment' : 'Skip next increment') + '">' + (skipNext ? 'Resume+' : 'Skip+') + '</button>' +
+            '</div>' +
+            '</li>';
+        }).join('');
+        nextEl.innerHTML =
+          '<div class="card">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">' +
+          '<div><div class="card-title" style="font-size:1.1rem;">Workout <span class="badge ' + badgeCls + '">' + esc(next.program) + '</span></div>' +
+          '<div class="card-subtitle">' + (next.exercises || []).length + ' exercises</div></div>' +
+          (!openSession ? '<button class="btn btn-primary" data-action="start-next">Start</button>' : '') +
+          '</div>' +
+          '<ul class="exercise-list">' + exRows + '</ul>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:1rem;">' +
+          '<div class="exercise-row" style="display:block;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span class="exercise-name" style="margin-bottom:0;">Workout A</span>' +
+          '<button class="btn btn-primary btn-sm" data-action="start-program" data-prog="A"' + startDisabled + '>Start A</button>' +
+          '</div></div>' +
+          '<div class="exercise-row" style="display:block;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span class="exercise-name" style="margin-bottom:0;">Workout B</span>' +
+          '<button class="btn btn-primary btn-sm" data-action="start-program" data-prog="B"' + startDisabled + '>Start B</button>' +
+          '</div></div>' +
+          '</div></div>';
+      } else {
+        nextEl.innerHTML = '';
+      }
+
+      // History
+      var histEl = document.getElementById('dash-history');
+      var recent = S.sessions.slice(0, 20);
+      var rows = recent.map(function(s) {
+        var status = s.finishedAt
+          ? 'Completed · ' + fmtDate(s.finishedAt)
+          : 'In Progress · ' + fmtDate(s.createdAt);
+        var actions = !s.finishedAt
+          ? '<button class="btn btn-ghost btn-sm" data-action="resume" data-id="' + esc(s.sessionId) + '">Resume</button>'
+          : '<button class="btn btn-ghost btn-sm" data-action="view-session" data-id="' + esc(s.sessionId) + '" data-name="' + esc(s.workoutName) + '" data-date="' + esc(s.finishedAt) + '">View</button>';
+        return '<li class="exercise-row" style="gap:.75rem;">' +
+               '<div style="flex:1;"><div class="exercise-name">Workout ' + esc(s.workoutName) + '</div>' +
+               '<div class="card-subtitle">' + esc(status) + '</div></div>' +
+               actions + '</li>';
+      }).join('');
+      histEl.innerHTML =
+        '<div class="card">' +
+        '<div class="card-title" style="margin-bottom:.25rem;">Recent Workouts</div>' +
+        (recent.length ? '<ul class="exercise-list" style="margin-top:.25rem;">' + rows + '</ul>' : '<div class="card-subtitle" style="margin-top:.5rem;">No workouts yet.</div>') +
+        '</div>';
+
+      // Settings / backup
+      renderSettings();
+    }
+
+    function renderSettings() {
+      document.getElementById('dash-settings').innerHTML =
+        '<div class="card" style="margin-top:.5rem;">' +
+        '<div class="card-title" style="margin-bottom:.75rem;">Data</div>' +
+        '<div style="display:flex;gap:.5rem;flex-wrap:wrap;">' +
+        '<button class="btn btn-ghost btn-sm" data-action="export-backup">Export backup</button>' +
+        '<button class="btn btn-ghost btn-sm" data-action="import-backup">Import backup…</button>' +
+        '</div>' +
+        '<div id="import-area" hidden style="margin-top:.75rem;">' +
+        '<div class="form-group" style="margin-bottom:.5rem;">' +
+        '<label for="import-json">Paste backup JSON</label>' +
+        '<textarea id="import-json" rows="5" placeholder=\'{"version":1,...}\'></textarea>' +
+        '</div>' +
+        '<div style="display:flex;gap:.5rem;">' +
+        '<button class="btn btn-danger btn-sm" data-action="do-import">Restore (replaces all data)</button>' +
+        '<button class="btn btn-ghost btn-sm" data-action="cancel-import">Cancel</button>' +
+        '</div></div>' +
+        '</div>';
+    }
+
+    // Delegate dashboard clicks
+    document.getElementById('view-dashboard').addEventListener('click', async function(e) {
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      var action = btn.dataset.action;
+      var id     = btn.dataset.id;
+      var prog   = btn.dataset.prog;
+      var name   = btn.dataset.name;
+
+      if (action === 'resume')        { resumeSession(id); return; }
+      if (action === 'discard')       { discardSession(id); return; }
+      if (action === 'start-next')    { doStartSession({}); return; }
+      if (action === 'start-program') { doStartSession({ workoutType:'program', programName:prog }); return; }
+      if (action === 'view-session')  { openSessionDetail(id, btn.dataset.name, btn.dataset.date); return; }
+
+      if (action === 'deload') {
+        var ok = await smoltConfirm('Deload ' + name, 'Reduce ' + name + ' weight by 10% (rounded to nearest 5 lb) and reset fail streak?', 'Deload');
+        if (!ok) return;
+        btn.disabled = true;
+        var r = await api.deload(name);
+        if (r.ok) {
+          showToast(name + ' deloaded to ' + r.data.newWeight + ' lb', 'success');
+          await loadDashboardData();
+        } else {
+          showToast('Deload failed');
+          btn.disabled = false;
+        }
+        return;
+      }
+
+      if (action === 'skip') {
+        var skipVal = btn.dataset.skip === '1';
+        var r2 = await api.skipIncrement(name, skipVal);
+        if (r2.ok) {
+          showToast(skipVal ? 'Will skip next increment for ' + name : 'Increment resumed for ' + name, 'success');
+          var pr = await api.getProgress();
+          if (pr.ok) S.progress = pr.data.progress || {};
+          renderDashboard();
+        } else {
+          showToast('Failed to update');
+        }
+        return;
+      }
+
+      if (action === 'export-backup') {
+        btn.disabled = true; btn.textContent = 'Exporting…';
+        try {
+          var br = await api.exportBackup();
+          if (!br.ok) { showToast('Export failed'); return; }
+          var blob = new Blob([JSON.stringify(br.data, null, 2)], { type: 'application/json' });
+          var url  = URL.createObjectURL(blob);
+          var a    = document.createElement('a');
+          a.href = url; a.download = 'smolt-backup.json'; a.click();
+          setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+          showToast('Backup downloaded', 'success');
+        } finally { btn.disabled = false; btn.textContent = 'Export backup'; }
+        return;
+      }
+
+      if (action === 'import-backup') {
+        document.getElementById('import-area').hidden = false;
+        btn.hidden = true;
+        return;
+      }
+
+      if (action === 'cancel-import') {
+        document.getElementById('import-area').hidden = true;
+        document.querySelector('[data-action="import-backup"]').hidden = false;
+        return;
+      }
+
+      if (action === 'do-import') {
+        var raw = document.getElementById('import-json').value.trim();
+        if (!raw) { showToast('Paste backup JSON first'); return; }
+        var parsed;
+        try { parsed = JSON.parse(raw); } catch (_) { showToast('Invalid JSON'); return; }
+        var ok2 = await smoltConfirm('Restore backup', 'This will replace ALL your current data. This cannot be undone.', 'Restore');
+        if (!ok2) return;
+        btn.disabled = true; btn.textContent = 'Restoring…';
+        try {
+          var ir = await api.importBackup(parsed);
+          if (!ir.ok) { showToast('Import failed'); return; }
+          showToast('Backup restored', 'success');
+          await loadDashboardData();
+        } finally { btn.disabled = false; btn.textContent = 'Restore (replaces all data)'; }
+        return;
+      }
+    });
+
+    // ── Session detail view ────────────────────────────────────────────────────
+    async function openSessionDetail(id, workoutName, finishedAt) {
+      showView('loading');
+      var r = await api.getSession(id);
+      if (!r.ok) { showToast('Failed to load session'); showView('dashboard'); return; }
+      var badgeCls = workoutName === 'A' ? 'badge-a' : 'badge-b';
+      document.getElementById('session-heading').innerHTML =
+        'Workout <span class="badge ' + badgeCls + '">' + esc(workoutName) + '</span> · ' + fmtDate(finishedAt);
+      renderSessionDetail(r.data);
+      showView('session');
+    }
+
+    function renderSessionDetail(session) {
+      var groups = groupSets(session.sets || []);
+      var el = document.getElementById('session-content');
+      if (!groups.length) { el.innerHTML = '<div class="card-subtitle">No sets recorded.</div>'; return; }
+      var html = groups.map(function(g) {
+        var setRows = g.sets.map(function(set, i) {
+          var dotCls = !set.completed ? 'skip' : (set.actualReps >= set.targetReps ? 'ok' : 'bad');
+          var repsLabel = set.completed
+            ? (set.actualReps !== undefined ? set.actualReps : set.targetReps) + ' reps'
+            : '—';
+          return '<div class="session-detail-set">' +
+            '<span class="sds-num">' + (i+1) + '</span>' +
+            '<span class="sds-dot ' + dotCls + '"></span>' +
+            '<span class="sds-reps">' + repsLabel + '</span>' +
+            '<span class="sds-weight">' + set.weight + ' lb</span>' +
+            '</div>';
+        }).join('');
+        return '<div class="card" style="margin-bottom:.75rem;">' +
+          '<div class="card-title" style="margin-bottom:.5rem;">' + esc(g.name) + '</div>' +
+          setRows + '</div>';
+      }).join('');
+      if (session.notes) {
+        html += '<div class="card"><div class="card-title" style="margin-bottom:.35rem;">Notes</div>' +
+          '<div style="font-size:.9rem;color:var(--muted);white-space:pre-wrap;">' + esc(session.notes) + '</div></div>';
+      }
+      el.innerHTML = html;
+    }
+
+    document.getElementById('session-back-btn').addEventListener('click', function() {
+      renderDashboard();
+      showView('dashboard');
+    });
+
+    // ── Session start / resume / discard ───────────────────────────────────────
+    async function doStartSession(body) {
+      showView('loading');
+      var r = await api.startSession(body);
+      if (!r.ok) { showToast('Failed to start workout.'); showView('dashboard'); return; }
+      S.active = { sessionId: r.data.sessionId, workoutName: r.data.workoutName, createdAt: r.data.createdAt, sets: r.data.sets || [], notes: '' };
+      enterWorkoutView(false);
+    }
+
+    async function resumeSession(id) {
+      showView('loading');
+      var r = await api.getSession(id);
+      if (!r.ok) { showToast('Failed to load session.'); showView('dashboard'); return; }
+      S.active = { sessionId: r.data.sessionId, workoutName: r.data.workoutName, createdAt: r.data.createdAt, sets: r.data.sets || [], notes: r.data.notes || '' };
+      enterWorkoutView(true);
+    }
+
+    async function discardSession(id) {
+      if (!(await smoltConfirm('Discard workout', 'Delete this workout without saving progress?', 'Discard'))) return;
+      var r = await api.deleteSession(id);
+      if (!r.ok) { showToast('Failed to delete workout.'); return; }
+      S.sessions = S.sessions.filter(function(s) { return s.sessionId !== id; });
+      renderDashboard();
+    }
+
+    // ── Workout view ───────────────────────────────────────────────────────────
+    var autosaveTimer     = null;
+    var notesSaveTimer    = null;
+    var autosaveInFlight  = false;
+    var lastSavedPayload  = '';
+    var lastSavedNotes    = '';
+    var timerInterval     = null;
+    var timerStarted      = null;
+    var timerEl           = document.getElementById('workout-timer');
+    var timerCountEl      = document.getElementById('wt-count');
+
+    function groupSets(sets) {
+      var order = [], groups = {};
+      (sets || []).forEach(function(set) {
+        if (!groups[set.exerciseName]) {
+          groups[set.exerciseName] = [];
+          order.push(set.exerciseName);
+        }
+        groups[set.exerciseName].push(set);
+      });
+      return order.map(function(name) { return { name:name, sets:groups[name] }; });
+    }
+
+    function enterWorkoutView(resume) {
+      if (resume) {
+        try {
+          var ts = Number(localStorage.getItem('smolt-last-set-ts'));
+          if (ts && Date.now() - ts < 600000) { timerStarted = ts; startTimerTick(); }
+        } catch (_) {}
+      }
+      lastSavedPayload = JSON.stringify(S.active.sets);
+      lastSavedNotes   = S.active.notes || '';
+      document.getElementById('workout-notes').value = lastSavedNotes;
+      renderWorkoutView();
+      showView('workout');
+      document.getElementById('workout-autosave').textContent = 'Autosaved';
+    }
+
+    function renderWorkoutView() {
+      if (!S.active) return;
+      var badgeCls = S.active.workoutName === 'A' ? 'badge-a' : 'badge-b';
+      document.getElementById('workout-heading').innerHTML =
+        'Workout <span class="badge ' + badgeCls + '">' + esc(S.active.workoutName) + '</span>';
+      renderExercises();
+    }
+
+    function renderExercises() {
+      var groups = groupSets(S.active ? S.active.sets : []);
+      var el = document.getElementById('workout-exercises');
+      el.innerHTML = groups.map(function(group) {
+        var weight = group.sets.length ? group.sets[0].weight : 0;
+        var warmups = renderWarmupChips(group.name, weight);
+        var bubbles = group.sets.map(function(set) {
+          var completed = set.completed || false;
+          var reps = (set.actualReps !== undefined && set.actualReps !== null) ? set.actualReps : set.targetReps;
+          var cls = 'set-bubble';
+          if (completed) cls += reps >= set.targetReps ? ' complete' : ' failed';
+          return '<button class="' + cls + '" data-set="' + set.setNumber + '">' + reps + '</button>';
+        }).join('');
+        return '<div class="workout-exercise" data-exercise-name="' + esc(group.name) + '">' +
+               '<div class="workout-exercise-header">' +
+               '<span class="workout-exercise-name">' + esc(group.name) + '</span>' +
+               '<span class="workout-exercise-weight" data-weight="' + weight + '" title="Tap to edit weight">' + weight + ' lb ✎</span>' +
+               '</div>' +
+               '<div class="weight-editor" hidden></div>' +
+               warmups +
+               '<div class="sets-grid">' + bubbles + '</div>' +
+               '</div>';
+      }).join('');
+    }
+
+    // Delegate clicks inside workout exercises (set bubbles + weight editor)
+    document.getElementById('workout-exercises').addEventListener('click', function(e) {
+      // Set bubble
+      var bubble = e.target.closest('[data-set]');
+      if (bubble) { tapBubble(Number(bubble.dataset.set)); return; }
+
+      // Weight label → open inline editor
+      var weightLabel = e.target.closest('.workout-exercise-weight');
+      if (weightLabel) {
+        var card   = weightLabel.closest('.workout-exercise');
+        var editor = card.querySelector('.weight-editor');
+        if (!editor.hidden) { editor.hidden = true; weightLabel.hidden = false; return; }
+        var cur = parseFloat(weightLabel.dataset.weight) || 0;
+        editor.innerHTML =
+          '<div class="weight-edit-wrap">' +
+          '<input class="weight-edit-input" type="number" value="' + cur + '" min="1" max="1000" step="2.5" inputmode="decimal" autofocus>' +
+          '<button class="weight-edit-ok" type="button">✓</button>' +
+          '</div>';
+        weightLabel.hidden = true;
+        editor.hidden = false;
+        editor.querySelector('input').select();
+        return;
+      }
+
+      // Weight editor confirm button
+      var okBtn = e.target.closest('.weight-edit-ok');
+      if (okBtn) {
+        var card2   = okBtn.closest('.workout-exercise');
+        var input   = card2.querySelector('.weight-edit-input');
+        var newW    = parseFloat(input.value);
+        if (!newW || newW <= 0) return;
+        commitWeight(card2, newW);
+        return;
+      }
+    });
+
+    // Also confirm on Enter in the weight input
+    document.getElementById('workout-exercises').addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter') return;
+      var input = e.target.closest('.weight-edit-input');
+      if (!input) return;
+      var newW = parseFloat(input.value);
+      if (!newW || newW <= 0) return;
+      commitWeight(input.closest('.workout-exercise'), newW);
+    });
+
+    function commitWeight(card, newW) {
+      if (!S.active) return;
+      var exName = card.dataset.exerciseName;
+      S.active.sets.forEach(function(set) {
+        if (set.exerciseName === exName) set.weight = newW;
+      });
+      renderExercises();
+      queueAutosave();
+    }
+
+    function tapBubble(setNumber) {
+      if (!S.active) return;
+      var set = S.active.sets.find(function(s) { return s.setNumber === setNumber; });
+      if (!set) return;
+      if (!set.completed) {
+        set.completed  = true;
+        set.actualReps = set.targetReps;
+        resetTimer();
+      } else {
+        var cur = (set.actualReps !== undefined && set.actualReps !== null) ? set.actualReps : set.targetReps;
+        if (cur > 0) {
+          set.actualReps = cur - 1;
+        } else {
+          set.completed  = false;
+          set.actualReps = set.targetReps;
+        }
+      }
+      renderExercises();
+      queueAutosave();
+    }
+
+    // ── Rest timer ─────────────────────────────────────────────────────────────
+    function paintTimer() {
+      if (!timerStarted) return;
+      var elapsed = Math.floor((Date.now() - timerStarted) / 1000);
+      var shown   = Math.min(elapsed, 600);
+      timerCountEl.textContent = fmtSecs(shown);
+      timerEl.classList.remove('wt-green','wt-yellow','wt-red','wt-flash');
+      if (shown <= 150)      timerEl.classList.add('wt-green');
+      else if (shown <= 180) timerEl.classList.add('wt-yellow');
+      else                   timerEl.classList.add('wt-red','wt-flash');
+    }
+
+    function startTimerTick() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerEl.classList.add('visible');
+      timerInterval = setInterval(function() {
+        paintTimer();
+        if (!timerStarted || Math.floor((Date.now() - timerStarted) / 1000) >= 600) {
+          clearInterval(timerInterval); timerInterval = null;
+        }
+      }, 1000);
+      paintTimer();
+    }
+
+    function resetTimer() {
+      timerStarted = Date.now();
+      try { localStorage.setItem('smolt-last-set-ts', String(timerStarted)); } catch (_) {}
+      startTimerTick();
+    }
+
+    function stopTimer() {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      timerEl.classList.remove('visible');
+      timerStarted = null;
+    }
+
+    // ── Autosave (sets) ────────────────────────────────────────────────────────
+    function queueAutosave() {
+      if (autosaveTimer) clearTimeout(autosaveTimer);
+      document.getElementById('workout-autosave').textContent = 'pending…';
+      autosaveTimer = setTimeout(function() { autosaveTimer = null; doSave(false); }, 700);
+    }
+
+    async function doSave(manual) {
+      if (!S.active) return;
+      var payload = JSON.stringify(S.active.sets);
+      if (!manual && payload === lastSavedPayload) return;
+      if (autosaveInFlight) return;
+      autosaveInFlight = true;
+      document.getElementById('workout-autosave').textContent = 'saving…';
+      try {
+        var r = await api.saveSets(S.active.sessionId, S.active.sets);
+        if (r.ok) {
+          lastSavedPayload = payload;
+          document.getElementById('workout-autosave').textContent = 'saved ' + fmtTime(new Date());
+        } else {
+          document.getElementById('workout-autosave').textContent = 'save failed';
+          if (manual) showToast('Failed to save workout.');
+        }
+      } catch (_) {
+        document.getElementById('workout-autosave').textContent = 'save failed';
+      } finally {
+        autosaveInFlight = false;
+      }
+    }
+
+    document.getElementById('workout-save-btn').addEventListener('click', function() { doSave(true); });
+
+    // ── Notes autosave ─────────────────────────────────────────────────────────
+    document.getElementById('workout-notes').addEventListener('input', function() {
+      if (!S.active) return;
+      S.active.notes = this.value;
+      if (notesSaveTimer) clearTimeout(notesSaveTimer);
+      notesSaveTimer = setTimeout(async function() {
+        notesSaveTimer = null;
+        var r = await api.patchNotes(S.active.sessionId, S.active.notes);
+        if (!r.ok) showToast('Failed to save notes.');
+        else lastSavedNotes = S.active.notes;
+      }, 700);
+    });
+
+    // ── Discard / Finish ───────────────────────────────────────────────────────
+    document.getElementById('workout-discard-btn').addEventListener('click', async function() {
+      if (!S.active) return;
+      var ok = await smoltConfirm('Discard workout', 'Delete this workout without saving progress?', 'Discard');
+      if (!ok) return;
+      var id = S.active.sessionId;
+      if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+      if (notesSaveTimer) { clearTimeout(notesSaveTimer); notesSaveTimer = null; }
+      var r = await api.deleteSession(id);
+      if (!r.ok) { showToast('Failed to delete workout.'); return; }
+      stopTimer();
+      S.active = null;
+      await loadDashboardData();
+    });
+
+    document.getElementById('workout-finish-btn').addEventListener('click', async function() {
+      if (!S.active) return;
+      var sets = S.active.sets;
+      var incomplete = sets.filter(function(s) { return !s.completed; }).length;
+      var total = sets.length;
+
+      if (incomplete > 0) {
+        var ok = await smoltConfirm(
+          'Incomplete sets',
+          incomplete + ' set(s) not marked complete. Incomplete A/B workouts will not advance progression.',
+          'Finish anyway'
+        );
+        if (!ok) return;
+      }
+
+      if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+      if (notesSaveTimer) { clearTimeout(notesSaveTimer); notesSaveTimer = null; }
+
+      var btn = document.getElementById('workout-finish-btn');
+      btn.disabled = true; btn.textContent = 'Finishing…';
+      try {
+        var r = await api.finishSession(S.active.sessionId, sets);
+        if (!r.ok) { showToast('Failed to finish workout.'); return; }
+        stopTimer();
+        S.finishData = {
+          workoutName:     S.active.workoutName,
+          completed:       sets.filter(function(s) { return s.completed; }).length,
+          total:           total,
+          progressUpdates: (r.data && r.data.progressUpdates) || [],
+        };
+        S.active = null;
+        api.nextWorkout().then(function(r)  { if (r.ok) S.next     = r.data; });
+        api.listSessions().then(function(r) { if (r.ok) S.sessions = r.data.sessions; });
+        api.getProgress().then(function(r)  { if (r.ok) S.progress = r.data.progress; });
+        renderFinish();
+        showView('finish');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Complete Workout';
+      }
+    });
+
+    // ── Finish summary ─────────────────────────────────────────────────────────
+    function renderFinish() {
+      var d = S.finishData;
+      if (!d) return;
+      var badgeCls = d.workoutName === 'A' ? 'badge-a' : 'badge-b';
+      var progressHtml = '';
+      if (d.progressUpdates && d.progressUpdates.length) {
+        var rows = d.progressUpdates.map(function(u) {
+          var arrow = u.action === 'increased'
+            ? '<span style="color:var(--green);font-weight:700;">↑ ' + u.newWeight + ' lb</span>'
+            : u.action === 'deload'
+            ? '<span style="color:var(--red);font-weight:700;">⬇ ' + u.newWeight + ' lb (deload)</span>'
+            : '<span style="color:var(--muted);">' + u.newWeight + ' lb</span>';
+          return '<li class="exercise-row" style="gap:.5rem;">' +
+                 '<span class="exercise-name">' + esc(u.exerciseName) + '</span>' + arrow + '</li>';
+        }).join('');
+        progressHtml = '<ul class="exercise-list" style="margin-top:.75rem;">' + rows + '</ul>';
+      }
+      document.getElementById('finish-content').innerHTML =
+        '<div class="card-subtitle" style="margin-bottom:.8rem;">' +
+        'Workout <span class="badge ' + badgeCls + '">' + esc(d.workoutName) + '</span> · ' +
+        d.completed + '/' + d.total + ' sets completed</div>' +
+        (d.completed === d.total
+          ? '<div class="alert alert-success">All sets complete!</div>'
+          : '<div class="card-subtitle" style="margin-bottom:.5rem;">Partial completion — progression not advanced.</div>') +
+        progressHtml;
+    }
+
+    document.getElementById('finish-back-btn').addEventListener('click', function() {
+      renderDashboard();
+      showView('dashboard');
+    });
+
+    // ── Progress charts ────────────────────────────────────────────────────────
+    var currentRange = 'all';
+
+    async function openProgressView() {
+      showView('loading');
+      if (!S.history) {
+        var r = await api.progressHistory();
+        if (r.ok) S.history = r.data.history || {};
+        else { showToast('Failed to load history'); showView('dashboard'); return; }
+      }
+      renderProgressView();
+      showView('progress');
+    }
+
+    function renderProgressView() {
+      var history = S.history || {};
+      var names = Object.keys(history).filter(function(n) { return history[n] && history[n].length > 0; });
+      var picker = document.getElementById('progress-exercise');
+      var current = picker.value;
+      picker.innerHTML = names.map(function(n) {
+        return '<option value="' + esc(n) + '"' + (n === current ? ' selected' : '') + '>' + esc(n) + '</option>';
+      }).join('');
+      if (!picker.value && names.length) picker.value = names[0];
+      drawChart();
+    }
+
+    document.getElementById('progress-exercise').addEventListener('change', function() { drawChart(); });
+    document.getElementById('progress-ranges').addEventListener('click', function(e) {
+      var btn = e.target.closest('.range-btn');
+      if (!btn) return;
+      currentRange = btn.dataset.range;
+      document.querySelectorAll('.range-btn').forEach(function(b) {
+        b.classList.toggle('active', b.dataset.range === currentRange);
+      });
+      drawChart();
+    });
+
+    function filterByRange(points) {
+      if (currentRange === 'all') return points;
+      var months = { '1M': 1, '3M': 3, '6M': 6 }[currentRange] || 12;
+      var cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - months);
+      var cutoffStr = cutoff.toISOString().slice(0, 10);
+      return points.filter(function(p) { return p.date >= cutoffStr; });
+    }
+
+    function drawChart() {
+      var history = S.history || {};
+      var name    = document.getElementById('progress-exercise').value;
+      var wrap    = document.getElementById('chart-wrap');
+      if (!name || !history[name]) {
+        wrap.innerHTML = '<div class="card-subtitle" style="padding:2rem 0;text-align:center;">No data.</div>';
+        return;
+      }
+      var points = filterByRange(history[name]);
+      if (points.length < 2) {
+        wrap.innerHTML = '<div class="card-subtitle" style="padding:2rem 0;text-align:center;">Not enough data for this range.</div>';
+        return;
+      }
+
+      var W = 560, H = 200, PL = 42, PR = 12, PT = 12, PB = 32;
+      var innerW = W - PL - PR, innerH = H - PT - PB;
+
+      var weights  = points.map(function(p) { return p.weight; });
+      var minW     = Math.min.apply(null, weights);
+      var maxW     = Math.max.apply(null, weights);
+      var rangeW   = maxW - minW || 1;
+      var minWFloor = Math.floor((minW - 5) / 5) * 5;
+      var maxWCeil  = Math.ceil((maxW + 5) / 5) * 5;
+
+      function xOf(i) { return PL + (i / (points.length - 1)) * innerW; }
+      function yOf(w) { return PT + innerH - ((w - minWFloor) / (maxWCeil - minWFloor)) * innerH; }
+
+      var polyPts = points.map(function(p, i) { return xOf(i) + ',' + yOf(p.weight); }).join(' ');
+
+      // Y axis labels (3-4 ticks)
+      var yTicks = [];
+      var step = Math.ceil((maxWCeil - minWFloor) / 4 / 5) * 5;
+      for (var y = minWFloor; y <= maxWCeil; y += step) yTicks.push(y);
+
+      // X axis labels (first, last, and middle)
+      var xLabels = [];
+      var labelIdx = [0, Math.floor(points.length / 2), points.length - 1];
+      labelIdx.forEach(function(i) {
+        if (i >= 0 && i < points.length) {
+          var d = points[i].date;
+          xLabels.push({ x: xOf(i), label: d.slice(5) }); // MM-DD
+        }
+      });
+
+      var dots = points.map(function(p, i) {
+        return '<circle class="chart-dot" cx="' + xOf(i) + '" cy="' + yOf(p.weight) + '" r="3"/>';
+      }).join('');
+
+      var yAxisLines = yTicks.map(function(v) {
+        var y = yOf(v);
+        return '<line class="chart-axis" x1="' + PL + '" y1="' + y + '" x2="' + (W - PR) + '" y2="' + y + '" stroke-dasharray="4 3"/>' +
+               '<text class="chart-label" x="' + (PL - 4) + '" y="' + (y + 4) + '" text-anchor="end">' + v + '</text>';
+      }).join('');
+
+      var xAxisLabels = xLabels.map(function(l) {
+        return '<text class="chart-label" x="' + l.x + '" y="' + (H - 6) + '" text-anchor="middle">' + l.label + '</text>';
+      }).join('');
+
+      wrap.innerHTML =
+        '<svg class="chart-svg" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' +
+        yAxisLines +
+        '<line class="chart-axis" x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + (H - PB) + '"/>' +
+        '<polyline class="chart-line" points="' + polyPts + '"/>' +
+        dots +
+        xAxisLabels +
+        '</svg>';
+    }
+
+    document.getElementById('progress-back-btn').addEventListener('click', function() {
+      renderDashboard();
+      showView('dashboard');
+    });
+
+    // ── beforeunload: flush pending sets ───────────────────────────────────────
+    window.addEventListener('beforeunload', function() {
+      if (!S.active) return;
+      var payload = JSON.stringify(S.active.sets);
+      if (payload !== lastSavedPayload && navigator.sendBeacon) {
+        navigator.sendBeacon(
+          '/api/workout/sessions/' + S.active.sessionId + '/sets',
+          new Blob([JSON.stringify({ sets: S.active.sets })], { type:'application/json' })
+        );
+      }
+    });
+
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden' && S.active) {
+        var payload = JSON.stringify(S.active.sets);
+        if (payload !== lastSavedPayload && navigator.sendBeacon) {
+          navigator.sendBeacon(
+            '/api/workout/sessions/' + S.active.sessionId + '/sets',
+            new Blob([JSON.stringify({ sets: S.active.sets })], { type:'application/json' })
+          );
+          lastSavedPayload = payload;
+        }
+      }
+    });
+
+    // ── Init ───────────────────────────────────────────────────────────────────
+    (async function init() {
+      var r = await api.me();
+      if (!r.ok) { showView('auth'); return; }
+      S.user = { username: r.data.username };
+      setNavUser(S.user);
+      await loadDashboardData();
+    })();
+
+  })();
+  </script>
+</body>
+</html>

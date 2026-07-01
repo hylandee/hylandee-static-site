@@ -1,58 +1,49 @@
-# Hylandee Static Site with Authentication
+# hylandee static site
 
-A vanilla HTML/CSS/JavaScript frontend for the Rust authentication API.
+Personal site hosted at [s3.hylandee.com](https://s3.hylandee.com) via CloudFront + S3. Vanilla HTML/CSS/JS, no build step, no framework.
 
-## Features
+## Pages
 
-- **Sign Up**: Create new accounts with username/password validation
-- **Login**: Authenticate existing users
-- **Profile View**: View your account information
-- **Change Username**: Update your username
-- **Change Password**: Update your password (requires current password)
-- **Delete Account**: Permanently delete your account
+| Path | Description |
+|---|---|
+| `/` | Home — links to all pages |
+| `/japan` | Japan travel tips |
+| `/quiz` | Animal personality quiz |
+| `/necrouomicon` | UoM rants |
+| `/workout` | SL5×5 tracker (pure static, localStorage) |
+| `/lifts-on-lambda` | SL5×5 tracker backed by Lambda + DynamoDB |
 
-## Files
+## Dev server
 
-- `index.html` - Main site with links to various pages
-- `auth/index.html` - Authentication page (signup/login)
-- `auth/profile.html` - User profile management
-- `auth/auth.css` - Styling for auth pages
-- `auth/auth.js` - JavaScript for API interactions
+```bash
+npm install
+node server.js
+# → http://localhost:3002
+```
 
-## Setup
+Serves static files and proxies `/api/*` to the Rust backend at `http://127.0.0.1:3000` (only needed for the `auth/` pages).
 
-1. **Start the Rust API server** (make sure it's running on `http://127.0.0.1:3000`):
+## Lifts on Lambda (`/lifts-on-lambda`)
 
-   ```bash
-   cd /Users/dylan/dev/printedin3d-rs
-   cargo run
-   ```
+SL5×5 workout tracker with a real backend. Single-file SPA (`lifts-on-lambda/index.html`) backed by:
 
-2. **Open the static site**:
-   - Open `index.html` in your browser
-   - Click "Authentication Demo" to access the auth features
+- **Lambda** (`smolt-lambda/`) — TypeScript function handling auth, session management, workout progression, and backups
+- **DynamoDB** — single table (`smolt`) storing users, sessions, progress, and rate-limit counters
+- **CloudFront** — routes `/api/*` to the Lambda Function URL; enforces origin secret header to prevent direct access
 
-## API Endpoints Used
+Features: plate calculator, warmup sets, rest timer, weight history charts, backup/restore, session notes, deload controls.
 
-- `POST /signup` - Create new account
-- `POST /login` - Authenticate user
-- `POST /logout` - End session
-- `GET /profile` - Get user profile
-- `POST /update-username` - Change username
-- `POST /change-password` - Change password
-- `DELETE /account` - Delete account
+## Deploy
 
-## Security Notes
+```bash
+cd cdk
+npm run deploy -- --context originSecret=<secret>
+```
 
-- All API calls include credentials (cookies)
-- Passwords are validated client-side and server-side
-- Sessions are managed via HTTP-only cookies
-- Account deletion requires password confirmation
+Deploys the full stack: S3 bucket, CloudFront distribution, Lambda function, DynamoDB table.
 
-## Browser Compatibility
+The Lambda is capped at 2 reserved concurrent executions. Login and registration are rate-limited per IP (10 and 5 attempts/minute respectively) using DynamoDB TTL counters.
 
-Works in all modern browsers that support:
+## Adding a new page
 
-- ES6+ JavaScript
-- Fetch API
-- CSS Grid/Flexbox
+Create a new directory with a self-contained `index.html` (inline styles and scripts). Add a link in the root `index.html`. No build step required.
