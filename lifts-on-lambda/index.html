@@ -188,8 +188,7 @@
     .wt-red    { background: rgba(239,68,68,.7);   color: #fff; }
     @keyframes timer-flash { 0%,100% { opacity:1; } 50% { opacity:.65; } }
     .wt-flash  { animation: timer-flash 1s ease-in-out infinite; }
-    .notes-area { margin-top: 1.5rem; }
-    .notes-area label { display: block; font-weight: 600; font-size: .85rem; margin-bottom: .4rem; color: var(--muted); }
+
     .spinner {
       width: 32px; height: 32px; border-radius: 50%;
       border: 3px solid var(--border); border-top-color: var(--accent);
@@ -372,10 +371,7 @@
         <span class="wt-count" id="wt-count">00:00</span>
       </div>
       <div id="workout-exercises"></div>
-      <div class="notes-area">
-        <label for="workout-notes">Notes</label>
-        <textarea id="workout-notes" placeholder="How did it go?"></textarea>
-      </div>
+
       <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
         <button class="btn btn-success" id="workout-finish-btn" type="button">Complete Workout</button>
       </div>
@@ -1069,10 +1065,7 @@
           '<div class="card-title" style="margin-bottom:.5rem;">' + esc(g.name) + '</div>' +
           setRows + '</div>';
       }).join('');
-      if (session.notes) {
-        html += '<div class="card"><div class="card-title" style="margin-bottom:.35rem;">Notes</div>' +
-          '<div style="font-size:.9rem;color:var(--muted);white-space:pre-wrap;">' + esc(session.notes) + '</div></div>';
-      }
+
       el.innerHTML = html;
     }
 
@@ -1108,10 +1101,8 @@
 
     // ── Workout view ───────────────────────────────────────────────────────────
     var autosaveTimer     = null;
-    var notesSaveTimer    = null;
     var autosaveInFlight  = false;
     var lastSavedPayload  = '';
-    var lastSavedNotes    = '';
     var timerInterval     = null;
     var timerStarted      = null;
     var timerEl           = document.getElementById('workout-timer');
@@ -1137,8 +1128,6 @@
         } catch (_) {}
       }
       lastSavedPayload = JSON.stringify(S.active.sets);
-      lastSavedNotes   = S.active.notes || '';
-      document.getElementById('workout-notes').value = lastSavedNotes;
       renderWorkoutView();
       showView('workout');
     }
@@ -1295,19 +1284,6 @@
       }
     }
 
-    // ── Notes autosave ─────────────────────────────────────────────────────────
-    document.getElementById('workout-notes').addEventListener('input', function() {
-      if (!S.active) return;
-      S.active.notes = this.value;
-      if (notesSaveTimer) clearTimeout(notesSaveTimer);
-      notesSaveTimer = setTimeout(async function() {
-        notesSaveTimer = null;
-        var r = await api.patchNotes(S.active.sessionId, S.active.notes);
-        if (!r.ok) showToast('Failed to save notes.');
-        else lastSavedNotes = S.active.notes;
-      }, 700);
-    });
-
     // ── Discard / Finish ───────────────────────────────────────────────────────
     document.getElementById('workout-discard-btn').addEventListener('click', async function() {
       if (!S.active) return;
@@ -1315,7 +1291,6 @@
       if (!ok) return;
       var id = S.active.sessionId;
       if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
-      if (notesSaveTimer) { clearTimeout(notesSaveTimer); notesSaveTimer = null; }
       var r = await api.deleteSession(id);
       if (!r.ok) { showToast('Failed to delete workout.'); return; }
       stopTimer();
@@ -1339,7 +1314,6 @@
       }
 
       if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
-      if (notesSaveTimer) { clearTimeout(notesSaveTimer); notesSaveTimer = null; }
 
       var btn = document.getElementById('workout-finish-btn');
       btn.disabled = true; btn.textContent = 'Finishing…';
