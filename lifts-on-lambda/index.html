@@ -96,19 +96,29 @@
     .exercise-name { font-weight: 600; font-size: .95rem; }
     .exercise-weight { color: var(--accent); font-weight: 700; font-size: 1rem; cursor: pointer; }
     .exercise-weight:hover { text-decoration: underline; }
-    .sets-grid { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .75rem; }
-    .set-bubble {
-      width: 52px; height: 52px; border-radius: 50%;
+.ex-set-row { display: grid; grid-template-columns: 1.6rem 1fr 1fr; gap: .45rem; align-items: center; margin-bottom: .35rem; }
+    .ex-set-num { color: var(--muted); font-size: .78rem; font-weight: 600; text-align: center; }
+    .ex-reps-btn {
       display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: .85rem; cursor: pointer;
-      border: 2px solid var(--border); background: var(--bg); color: var(--muted);
+      padding: .5rem; border-radius: 8px;
+      font-weight: 700; font-size: 1rem; cursor: pointer;
+      border: 1.5px solid var(--border); background: var(--bg); color: var(--text);
       transition: background .15s, border-color .15s, color .15s, transform .1s;
-      user-select: none; -webkit-tap-highlight-color: transparent;
+      user-select: none; -webkit-tap-highlight-color: transparent; width: 100%;
     }
-    .set-bubble:hover { border-color: var(--accent); color: var(--text); }
-    .set-bubble.complete { background: var(--green); border-color: var(--green); color: #000; }
-    .set-bubble.failed  { background: var(--red);   border-color: var(--red);   color: #fff; }
-    .set-bubble:active  { transform: scale(.93); }
+    .ex-reps-btn:hover { border-color: var(--accent); }
+    .ex-reps-btn.complete { background: var(--green); border-color: var(--green); color: #000; }
+    .ex-reps-btn.failed  { background: var(--red);   border-color: var(--red);   color: #fff; }
+    .ex-reps-btn:active  { transform: scale(.96); }
+    .ex-weight-cell { display: flex; align-items: center; gap: .3rem; }
+    .ex-weight-input {
+      flex: 1; background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: .45rem .5rem; font-size: .9rem; font-weight: 600;
+      font-family: inherit; min-width: 0;
+    }
+    .ex-weight-input:focus { outline: none; border-color: var(--accent); }
+    .ex-weight-unit { color: var(--muted); font-size: .8rem; flex-shrink: 0; }
     .warmup-chips { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .5rem; }
     .warmup-chip {
       padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 600;
@@ -117,19 +127,8 @@
       cursor: pointer;
     }
     .warmup-chip.done { background: var(--green); border-color: var(--green); color: #000; }
-    /* Inline weight editor */
-    .weight-edit-wrap { display: inline-flex; align-items: center; gap: .35rem; }
-    .weight-edit-input {
-      width: 70px; background: var(--bg); color: var(--text);
-      border: 1px solid var(--accent); border-radius: 6px;
-      padding: .2rem .4rem; font-size: .95rem; font-weight: 700; font-family: inherit;
-    }
-    .weight-edit-input:focus { outline: none; }
-    .weight-edit-ok {
-      background: var(--accent); color: #fff; border: none; border-radius: 6px;
-      padding: .2rem .5rem; font-size: .8rem; font-weight: 700; cursor: pointer;
-    }
-    .plates-row { font-size: .78rem; color: var(--muted); margin-top: .3rem; min-height: 1.2em; }
+    .workout-ex-head { margin-bottom: .6rem; }
+    .workout-ex-name { font-weight: 700; font-size: 1.05rem; }
     /* Plate calculator popover */
     .plate-popover-backdrop { position:fixed; inset:0; z-index:100; }
     .plate-popover { position:absolute; z-index:101; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.75rem 1rem; box-shadow:0 4px 20px rgba(0,0,0,.2); min-width:200px; }
@@ -173,14 +172,7 @@
     }
     .open-banner-info { font-weight: 700; color: var(--yellow); }
     .open-banner-sub  { font-size: .8rem; color: var(--muted); margin-top: .1rem; }
-    .workout-exercise { margin-bottom: 2rem; }
-    .workout-exercise-header {
-      display: flex; align-items: baseline; justify-content: space-between; margin-bottom: .25rem;
-    }
-    .workout-exercise-name { font-weight: 700; font-size: 1.05rem; }
-    .workout-exercise-meta { color: var(--muted); font-size: .82rem; margin-bottom: .4rem; }
-    .workout-exercise-weight { color: var(--accent); font-weight: 700; cursor: pointer; }
-    .workout-exercise-weight:hover { text-decoration: underline; }
+    .workout-exercise.card { margin-bottom: .75rem; padding: 1rem 1.25rem; }
     .workout-timer {
       position: sticky; top: 4.5rem; z-index: 10;
       width: fit-content; margin: 0 auto 1.5rem;
@@ -196,7 +188,6 @@
     .wt-red    { background: rgba(239,68,68,.7);   color: #fff; }
     @keyframes timer-flash { 0%,100% { opacity:1; } 50% { opacity:.65; } }
     .wt-flash  { animation: timer-flash 1s ease-in-out infinite; }
-    .autosave-status { font-size: .78rem; color: var(--muted); }
     .notes-area { margin-top: 1.5rem; }
     .notes-area label { display: block; font-weight: 600; font-size: .85rem; margin-bottom: .4rem; color: var(--muted); }
     .spinner {
@@ -374,7 +365,6 @@
         <h2 id="workout-heading" style="font-weight:700;font-size:1.25rem;display:flex;align-items:center;gap:.45rem;"></h2>
         <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
           <button class="btn btn-ghost btn-sm" id="workout-save-btn" type="button">Save</button>
-          <span id="workout-autosave" class="autosave-status">--</span>
           <button class="btn btn-ghost btn-sm" id="workout-discard-btn" type="button">Discard</button>
         </div>
       </div>
@@ -1160,7 +1150,6 @@
       document.getElementById('workout-notes').value = lastSavedNotes;
       renderWorkoutView();
       showView('workout');
-      document.getElementById('workout-autosave').textContent = 'Autosaved';
     }
 
     function renderWorkoutView() {
@@ -1175,79 +1164,59 @@
       var groups = groupSets(S.active ? S.active.sets : []);
       var el = document.getElementById('workout-exercises');
       el.innerHTML = groups.map(function(group) {
-        var weight = group.sets.length ? group.sets[0].weight : 0;
-        var warmups = renderWarmupChips(group.name, weight);
-        var bubbles = group.sets.map(function(set) {
+        var firstWeight = group.sets.length ? group.sets[0].weight : 0;
+        var warmups = renderWarmupChips(group.name, firstWeight);
+        var rows = group.sets.map(function(set) {
           var completed = set.completed || false;
           var reps = (set.actualReps !== undefined && set.actualReps !== null) ? set.actualReps : set.targetReps;
-          var cls = 'set-bubble';
-          if (completed) cls += reps >= set.targetReps ? ' complete' : ' failed';
-          return '<button class="' + cls + '" data-set="' + set.setNumber + '">' + reps + '</button>';
+          var btnCls = 'ex-reps-btn';
+          if (completed) btnCls += reps >= set.targetReps ? ' complete' : ' failed';
+          return '<div class="ex-set-row">' +
+                 '<span class="ex-set-num">' + set.setNumber + '</span>' +
+                 '<button class="' + btnCls + '" type="button" data-set="' + set.setNumber + '">' + reps + '</button>' +
+                 '<div class="ex-weight-cell">' +
+                 '<input class="ex-weight-input" type="number" value="' + set.weight + '" step="2.5" min="1" max="1000" inputmode="decimal" data-set-weight="' + set.setNumber + '">' +
+                 '<span class="ex-weight-unit">lb</span>' +
+                 '</div>' +
+                 '</div>';
         }).join('');
-        return '<div class="workout-exercise" data-exercise-name="' + esc(group.name) + '">' +
-               '<div class="workout-exercise-header">' +
-               '<span class="workout-exercise-name">' + esc(group.name) + '</span>' +
-               '<span class="workout-exercise-weight" data-weight="' + weight + '" title="Tap to edit weight">' + weight + ' lb ✎</span>' +
+        return '<div class="card workout-exercise" data-exercise-name="' + esc(group.name) + '">' +
+               '<div class="workout-ex-head">' +
+               '<span class="workout-ex-name">' + esc(group.name) + '</span>' +
                '</div>' +
-               '<div class="weight-editor" hidden></div>' +
                warmups +
-               '<div class="sets-grid">' + bubbles + '</div>' +
+               rows +
                '</div>';
       }).join('');
     }
 
-    // Delegate clicks inside workout exercises (set bubbles + weight editor)
     document.getElementById('workout-exercises').addEventListener('click', function(e) {
-      // Set bubble
-      var bubble = e.target.closest('[data-set]');
-      if (bubble) { tapBubble(Number(bubble.dataset.set)); return; }
-
-      // Weight label → open inline editor
-      var weightLabel = e.target.closest('.workout-exercise-weight');
-      if (weightLabel) {
-        var card   = weightLabel.closest('.workout-exercise');
-        var editor = card.querySelector('.weight-editor');
-        if (!editor.hidden) { editor.hidden = true; weightLabel.hidden = false; return; }
-        var cur = parseFloat(weightLabel.dataset.weight) || 0;
-        editor.innerHTML =
-          '<div class="weight-edit-wrap">' +
-          '<input class="weight-edit-input" type="number" value="' + cur + '" min="1" max="1000" step="2.5" inputmode="decimal" autofocus>' +
-          '<button class="weight-edit-ok" type="button">✓</button>' +
-          '</div>';
-        weightLabel.hidden = true;
-        editor.hidden = false;
-        editor.querySelector('input').select();
-        return;
-      }
-
-      // Weight editor confirm button
-      var okBtn = e.target.closest('.weight-edit-ok');
-      if (okBtn) {
-        var card2   = okBtn.closest('.workout-exercise');
-        var input   = card2.querySelector('.weight-edit-input');
-        var newW    = parseFloat(input.value);
-        if (!newW || newW <= 0) return;
-        commitWeight(card2, newW);
-        return;
-      }
+      var btn = e.target.closest('[data-set]');
+      if (btn) { tapBubble(Number(btn.dataset.set)); return; }
     });
 
-    // Also confirm on Enter in the weight input
-    document.getElementById('workout-exercises').addEventListener('keydown', function(e) {
-      if (e.key !== 'Enter') return;
-      var input = e.target.closest('.weight-edit-input');
+    document.getElementById('workout-exercises').addEventListener('change', function(e) {
+      var input = e.target.closest('[data-set-weight]');
       if (!input) return;
+      var setNum = Number(input.dataset.setWeight);
       var newW = parseFloat(input.value);
       if (!newW || newW <= 0) return;
-      commitWeight(input.closest('.workout-exercise'), newW);
+      commitSetWeight(setNum, newW);
     });
 
-    function commitWeight(card, newW) {
+    function commitSetWeight(setNumber, newWeight) {
       if (!S.active) return;
-      var exName = card.dataset.exerciseName;
-      S.active.sets.forEach(function(set) {
-        if (set.exerciseName === exName) set.weight = newW;
-      });
+      var set = S.active.sets.find(function(s) { return s.setNumber === setNumber; });
+      if (!set) return;
+      var oldWeight = set.weight;
+      var exName = set.exerciseName;
+      var exSets = S.active.sets.filter(function(s) { return s.exerciseName === exName; });
+      // Changing first set propagates to all sets in that exercise with the same old weight
+      if (exSets.length && exSets[0].setNumber === setNumber) {
+        exSets.forEach(function(s) { if (s.weight === oldWeight) s.weight = newWeight; });
+      } else {
+        set.weight = newWeight;
+      }
       renderExercises();
       queueAutosave();
     }
@@ -1312,7 +1281,6 @@
     // ── Autosave (sets) ────────────────────────────────────────────────────────
     function queueAutosave() {
       if (autosaveTimer) clearTimeout(autosaveTimer);
-      document.getElementById('workout-autosave').textContent = 'pending…';
       autosaveTimer = setTimeout(function() { autosaveTimer = null; doSave(false); }, 700);
     }
 
@@ -1322,18 +1290,15 @@
       if (!manual && payload === lastSavedPayload) return;
       if (autosaveInFlight) return;
       autosaveInFlight = true;
-      document.getElementById('workout-autosave').textContent = 'saving…';
       try {
         var r = await api.saveSets(S.active.sessionId, S.active.sets);
         if (r.ok) {
           lastSavedPayload = payload;
-          document.getElementById('workout-autosave').textContent = 'saved ' + fmtTime(new Date());
-        } else {
-          document.getElementById('workout-autosave').textContent = 'save failed';
-          if (manual) showToast('Failed to save workout.');
+        } else if (manual) {
+          showToast('Failed to save workout.');
         }
       } catch (_) {
-        document.getElementById('workout-autosave').textContent = 'save failed';
+        if (manual) showToast('Failed to save workout.');
       } finally {
         autosaveInFlight = false;
       }
