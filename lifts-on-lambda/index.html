@@ -1155,7 +1155,7 @@
                  '<span class="ex-set-num">' + set.setNumber + '</span>' +
                  '<button class="' + btnCls + '" type="button" data-set="' + set.setNumber + '">' + reps + '</button>' +
                  '<div class="ex-weight-cell">' +
-                 '<input class="ex-weight-input" type="number" value="' + set.weight + '" step="2.5" min="1" max="1000" inputmode="decimal" data-set-weight="' + set.setNumber + '">' +
+                 '<input class="ex-weight-input" type="number" value="' + set.weight + '" step="5" min="5" max="1000" inputmode="decimal" data-set-weight="' + set.setNumber + '">' +
                  '<span class="ex-weight-unit">lb</span>' +
                  '</div>' +
                  '</div>';
@@ -1188,6 +1188,8 @@
       if (!S.active) return;
       var set = S.active.sets.find(function(s) { return s.setNumber === setNumber; });
       if (!set) return;
+      newWeight = Math.round(newWeight / 5) * 5;
+      if (newWeight < 5) newWeight = 5;
       var oldWeight = set.weight;
       var exName = set.exerciseName;
       var exSets = S.active.sets.filter(function(s) { return s.exerciseName === exName; });
