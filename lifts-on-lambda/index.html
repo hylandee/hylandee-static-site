@@ -131,7 +131,7 @@
     .workout-ex-name { font-weight: 700; font-size: 1.05rem; }
     /* Plate calculator popover */
     .plate-popover-backdrop { position:fixed; inset:0; z-index:100; }
-    .plate-popover { position:absolute; z-index:101; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.75rem 1rem; box-shadow:0 4px 20px rgba(0,0,0,.2); min-width:200px; }
+    .plate-popover { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:101; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.75rem 1rem; box-shadow:0 4px 20px rgba(0,0,0,.2); min-width:200px; }
     .plate-stack { display:flex; align-items:center; gap:1px; height:72px; margin:.4rem 0; }
     .plate-sleeve { width:20px; height:10px; background:#888; border-radius:0 3px 3px 0; flex-shrink:0; }
     .plate { width:14px; border-radius:3px; flex-shrink:0; }
@@ -609,14 +609,6 @@
         keyEl.className = '';
         keyEl.textContent = 'Just the bar (45 lb)';
       }
-
-      // Position below the clicked element
-      var rect = el.getBoundingClientRect();
-      var top  = rect.bottom + window.scrollY + 8;
-      var left = rect.left + window.scrollX - 60;
-      left = Math.max(8, Math.min(left, window.innerWidth - 224));
-      pop.style.top  = top + 'px';
-      pop.style.left = left + 'px';
 
       backdrop.hidden = false;
       pop.hidden = false;
