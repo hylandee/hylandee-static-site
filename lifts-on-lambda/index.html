@@ -827,9 +827,15 @@
           api.listSessions(),
         ]);
         var nextRes = results[0], progressRes = results[1], sessionsRes = results[2];
-        if (progressRes.ok)  S.progress = progressRes.data.progress  || {};
         if (nextRes.ok)      S.next     = nextRes.data;
-        if (sessionsRes.ok)  S.sessions = sessionsRes.data.sessions   || [];
+        if (sessionsRes.ok)  S.sessions = sessionsRes.data.sessions   || {};
+
+        if (!progressRes.ok) {
+          showToast('Failed to load — please refresh.');
+          showView('dashboard');
+          return;
+        }
+        S.progress = progressRes.data.progress || {};
 
         if (Object.keys(S.progress).length === 0) {
           renderOnboarding();

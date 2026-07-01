@@ -235,7 +235,8 @@ export async function saveSets(event: LambdaEvent, sessionId: string): Promise<L
     new UpdateCommand({
       TableName: TABLE,
       Key: { pk: `USER#${s.userId}`, sk: ref.userSk },
-      UpdateExpression: 'SET sets = :sets',
+      UpdateExpression: 'SET #sets = :sets',
+      ExpressionAttributeNames: { '#sets': 'sets' },
       ExpressionAttributeValues: { ':sets': sets },
     }),
   );
@@ -328,7 +329,8 @@ export async function finishSession(event: LambdaEvent, sessionId: string): Prom
     new UpdateCommand({
       TableName: TABLE,
       Key: { pk: `USER#${s.userId}`, sk: ref.userSk },
-      UpdateExpression: 'SET finishedAt = :fa, sets = :sets',
+      UpdateExpression: 'SET finishedAt = :fa, #sets = :sets',
+      ExpressionAttributeNames: { '#sets': 'sets' },
       ExpressionAttributeValues: { ':fa': now, ':sets': sets },
     }),
   );
@@ -555,7 +557,8 @@ export async function patchSession(event: LambdaEvent, sessionId: string): Promi
   await ddb.send(new UpdateCommand({
     TableName: TABLE,
     Key: { pk: `USER#${s.userId}`, sk: ref.userSk },
-    UpdateExpression: 'SET notes = :notes',
+    UpdateExpression: 'SET #notes = :notes',
+    ExpressionAttributeNames: { '#notes': 'notes' },
     ExpressionAttributeValues: { ':notes': notes },
   }));
   return json(200, { ok: true });

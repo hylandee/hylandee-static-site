@@ -84,9 +84,11 @@ export class HylandeeStack extends cdk.Stack {
         ORIGIN_SECRET: originSecret,
       },
       timeout: cdk.Duration.seconds(10),
-      memorySize: 256,
-      reservedConcurrentExecutions: 2,
+      memorySize: 128,
+      architecture: lambda.Architecture.ARM_64,
+      reservedConcurrentExecutions: 5,
     });
+
 
     table.grantReadWriteData(smoltFn);
     sessionSecret.grantRead(smoltFn);
