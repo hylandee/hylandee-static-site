@@ -154,7 +154,37 @@ export async function logout(event: LambdaEvent): Promise<LambdaResult> {
 export async function me(event: LambdaEvent): Promise<LambdaResult> {
   const s = await resolveSession(event);
   if (!s) return err(401, 'Not authenticated');
-  return json(200, { username: s.username });
+  const { Item } = await ddb.send(
+    new GetCommand({ TableName: TABLE, Key: { pk: `USER#${s.username}`, sk: 'PROFILE' } }),
+  );
+  return json(200, {
+    username: s.username,
+    unitPref: Item?.unitPref ?? 'imperial',
+    keepAwake: Item?.keepAwake ?? false,
+  });
+}
+
+export async function updateProfile(event: LambdaEvent): Promise<LambdaResult> {
+  const s = await resolveSession(event);
+  if (!s) return err(401, 'Not authenticated');
+  const body = parseBody(event);
+  const sets: string[] = [];
+  const vals: Record<string, any> = {};
+  if (body.unitPref !== undefined) {
+    if (body.unitPref !== 'imperial' && body.unitPref !== 'metric') return err(400, 'Invalid unitPref');
+    sets.push('unitPref = :u'); vals[':u'] = body.unitPref;
+  }
+  if (body.keepAwake !== undefined) {
+    sets.push('keepAwake = :k'); vals[':k'] = Boolean(body.keepAwake);
+  }
+  if (sets.length === 0) return json(200, {});
+  await ddb.send(new UpdateCommand({
+    TableName: TABLE,
+    Key: { pk: `USER#${s.username}`, sk: 'PROFILE' },
+    UpdateExpression: 'SET ' + sets.join(', '),
+    ExpressionAttributeValues: vals,
+  }));
+  return json(200, {});
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

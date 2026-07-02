@@ -1,4 +1,4 @@
-import { login, logout, me, register } from './auth.js';
+import { login, logout, me, register, updateProfile } from './auth.js';
 import {
   deloadExercise,
   deleteSession,
@@ -40,6 +40,7 @@ export async function handler(event: LambdaEvent): Promise<LambdaResult> {
     if (method === 'POST' && path === '/api/login')               return login(event);
     if (method === 'POST' && path === '/api/logout')              return logout(event);
     if (method === 'GET'  && path === '/api/me')                  return me(event);
+    if (method === 'PUT'  && path === '/api/profile')             return updateProfile(event);
 
     // Workout
     if (method === 'GET'  && path === '/api/workout/next')              return nextWorkout(event);

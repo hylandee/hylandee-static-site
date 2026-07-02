@@ -58,7 +58,14 @@
     .logo { font-weight: 700; font-size: 1.1rem; letter-spacing: .04em; color: var(--text); text-decoration: none; }
     .logo span { color: var(--accent); }
     .nav-actions { display: flex; gap: .75rem; align-items: center; }
-    .username { color: var(--muted); font-size: .875rem; }
+    .username { color: var(--muted); font-size: .875rem; background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
+    .username:hover { color: var(--text); }
+    .setting-row { display: flex; justify-content: space-between; align-items: center; padding: .35rem 0; }
+    .unit-opts { display: flex; gap: .25rem; }
+    .unit-opt { padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 6px; background: none; color: var(--text); cursor: pointer; font-size: .875rem; font-family: inherit; }
+    .unit-opt.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+    .toggle-switch { padding: .3rem .7rem; border: 1px solid var(--border); border-radius: 6px; background: none; color: var(--muted); cursor: pointer; font-size: .875rem; font-family: inherit; min-width: 2.75rem; text-align: center; }
+    .toggle-switch[aria-checked="true"] { background: var(--green); border-color: var(--green); color: #000; font-weight: 600; }
     .page { max-width: 640px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
     .card {
       background: var(--surface); border: 1px solid var(--border);
@@ -293,7 +300,7 @@
           <button class="theme-opt" data-theme="dark_hc">Dark HC</button>
         </div>
       </div>
-      <span class="username" id="nav-username" hidden></span>
+      <button class="username" id="nav-username" hidden type="button"></button>
       <button class="btn btn-ghost btn-sm" id="nav-logout" hidden type="button">Logout</button>
     </div>
   </nav>
@@ -406,6 +413,31 @@
       </div>
     </div>
 
+    <!-- ── Settings ── -->
+    <div id="view-settings" hidden>
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;margin-top:.5rem;">
+        <button class="btn btn-ghost btn-sm" id="settings-back-btn" type="button">← Back</button>
+        <h2 style="font-weight:700;font-size:1.25rem;">Settings</h2>
+      </div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title" style="margin-bottom:.75rem;">Units</div>
+        <div class="setting-row">
+          <span>Weight unit</span>
+          <div class="unit-opts">
+            <button class="unit-opt" id="unit-imperial" type="button">lb</button>
+            <button class="unit-opt" id="unit-metric" type="button">kg</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem;">Workout</div>
+        <div class="setting-row">
+          <span>Keep screen awake during workout</span>
+          <button class="toggle-switch" id="keep-awake-btn" role="switch" aria-checked="false" type="button">Off</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Finish ── -->
     <div id="view-finish" hidden>
       <div class="card" style="border-color:color-mix(in srgb,var(--green) 35%,var(--border));">
@@ -456,6 +488,7 @@
     // ── State ──────────────────────────────────────────────────────────────────
     var S = {
       user:        null,
+      prefs:       { unitPref: 'imperial', keepAwake: false },
       progress:    {},
       next:        null,
       sessions:    [],
@@ -463,6 +496,18 @@
       finishData:  null,
       history:     null,
     };
+
+    // ── Unit helpers ───────────────────────────────────────────────────────────
+    function wtUnit() { return S.prefs.unitPref === 'metric' ? 'kg' : 'lb'; }
+    function wtStep() { return S.prefs.unitPref === 'metric' ? 2.5 : 5; }
+    function wtDisplay(lb) {
+      if (S.prefs.unitPref === 'metric') return Math.round(lb / 2.20462 * 10) / 10;
+      return lb;
+    }
+    function wtToLb(val) {
+      if (S.prefs.unitPref === 'metric') return Math.round(val * 2.20462);
+      return Math.round(val / 5) * 5 || 5;
+    }
 
     // ── Theme ──────────────────────────────────────────────────────────────────
     var THEMES = ['light','dark','forest','sunset','dark_hc'];
@@ -677,16 +722,17 @@
       skipIncrement:   function(name,skip) { return apiCall('/api/workout/progress/'+encodeURIComponent(name)+'/skip', {method:'POST',headers:CT,body:JSON.stringify({skip:skip})}); },
       exportBackup:    function() { return apiCall('/api/backup'); },
       importBackup:    function(data) { return apiCall('/api/backup', {method:'POST',headers:CT,body:JSON.stringify(data)}); },
+      updateProfile:   function(data) { return apiCall('/api/profile', {method:'PUT',headers:CT,body:JSON.stringify(data)}); },
     };
 
     // ── View router ────────────────────────────────────────────────────────────
-    var VIEWS = ['loading','auth','onboarding','dashboard','workout','session','progress','finish'];
+    var VIEWS = ['loading','auth','onboarding','dashboard','workout','session','progress','finish','settings'];
     function showView(name) {
       VIEWS.forEach(function(v) {
         document.getElementById('view-' + v).hidden = (v !== name);
       });
-      var inApp = ['dashboard','workout','session','progress','finish'].indexOf(name) !== -1;
-      document.getElementById('nav-progress').hidden = !inApp;
+      var inApp = ['dashboard','workout','session','progress','finish','settings'].indexOf(name) !== -1;
+      document.getElementById('nav-progress').hidden = !inApp || name === 'settings';
     }
 
     // ── Nav ────────────────────────────────────────────────────────────────────
@@ -703,6 +749,8 @@
         navLogout.hidden   = true;
       }
     }
+
+    navUsername.addEventListener('click', function() { openSettingsView(); });
 
     navLogout.addEventListener('click', async function() {
       await api.logout();
@@ -1058,7 +1106,7 @@
             '<span class="sds-num">' + (i+1) + '</span>' +
             '<span class="sds-dot ' + dotCls + '"></span>' +
             '<span class="sds-reps">' + repsLabel + '</span>' +
-            '<span class="sds-weight">' + set.weight + ' lb</span>' +
+            '<span class="sds-weight">' + wtDisplay(set.weight) + ' ' + wtUnit() + '</span>' +
             '</div>';
         }).join('');
         return '<div class="card" style="margin-bottom:.75rem;">' +
@@ -1130,6 +1178,7 @@
       lastSavedPayload = JSON.stringify(S.active.sets);
       renderWorkoutView();
       showView('workout');
+      requestWakeLock();
     }
 
     function renderWorkoutView() {
@@ -1155,8 +1204,8 @@
                  '<span class="ex-set-num">' + set.setNumber + '</span>' +
                  '<button class="' + btnCls + '" type="button" data-set="' + set.setNumber + '">' + reps + '</button>' +
                  '<div class="ex-weight-cell">' +
-                 '<input class="ex-weight-input" type="number" value="' + set.weight + '" step="5" min="5" max="1000" inputmode="decimal" data-set-weight="' + set.setNumber + '">' +
-                 '<span class="ex-weight-unit">lb</span>' +
+                 '<input class="ex-weight-input" type="number" value="' + wtDisplay(set.weight) + '" step="' + wtStep() + '" min="' + wtStep() + '" max="1000" inputmode="decimal" data-set-weight="' + set.setNumber + '">' +
+                 '<span class="ex-weight-unit">' + wtUnit() + '</span>' +
                  '</div>' +
                  '</div>';
         }).join('');
@@ -1188,8 +1237,7 @@
       if (!S.active) return;
       var set = S.active.sets.find(function(s) { return s.setNumber === setNumber; });
       if (!set) return;
-      newWeight = Math.round(newWeight / 5) * 5;
-      if (newWeight < 5) newWeight = 5;
+      newWeight = wtToLb(newWeight);
       var oldWeight = set.weight;
       var exName = set.exerciseName;
       var exSets = S.active.sets.filter(function(s) { return s.exerciseName === exName; });
@@ -1258,6 +1306,7 @@
       if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
       timerEl.classList.remove('visible');
       timerStarted = null;
+      releaseWakeLock();
     }
 
     // ── Autosave (sets) ────────────────────────────────────────────────────────
@@ -1517,11 +1566,58 @@
       }
     });
 
+    // ── Wake lock ──────────────────────────────────────────────────────────────
+    var wakeLock = null;
+    async function requestWakeLock() {
+      if (!S.prefs.keepAwake || !('wakeLock' in navigator)) return;
+      try { wakeLock = await navigator.wakeLock.request('screen'); } catch (_) {}
+    }
+    function releaseWakeLock() {
+      if (wakeLock) { wakeLock.release(); wakeLock = null; }
+    }
+
+    // ── Settings view ──────────────────────────────────────────────────────────
+    function openSettingsView() {
+      var unitPref = S.prefs.unitPref;
+      document.getElementById('unit-imperial').classList.toggle('active', unitPref === 'imperial');
+      document.getElementById('unit-metric').classList.toggle('active', unitPref === 'metric');
+      var kaBtn = document.getElementById('keep-awake-btn');
+      kaBtn.setAttribute('aria-checked', String(S.prefs.keepAwake));
+      kaBtn.textContent = S.prefs.keepAwake ? 'On' : 'Off';
+      showView('settings');
+    }
+
+    async function savePref(patch) {
+      Object.assign(S.prefs, patch);
+      await api.updateProfile(patch);
+    }
+
+    document.getElementById('unit-imperial').addEventListener('click', async function() {
+      await savePref({ unitPref: 'imperial' });
+      document.getElementById('unit-imperial').classList.add('active');
+      document.getElementById('unit-metric').classList.remove('active');
+    });
+    document.getElementById('unit-metric').addEventListener('click', async function() {
+      await savePref({ unitPref: 'metric' });
+      document.getElementById('unit-metric').classList.add('active');
+      document.getElementById('unit-imperial').classList.remove('active');
+    });
+    document.getElementById('keep-awake-btn').addEventListener('click', async function() {
+      var next = !S.prefs.keepAwake;
+      await savePref({ keepAwake: next });
+      this.setAttribute('aria-checked', String(next));
+      this.textContent = next ? 'On' : 'Off';
+    });
+    document.getElementById('settings-back-btn').addEventListener('click', function() {
+      showView('dashboard');
+    });
+
     // ── Init ───────────────────────────────────────────────────────────────────
     (async function init() {
       var r = await api.me();
       if (!r.ok) { showView('auth'); return; }
       S.user = { username: r.data.username };
+      S.prefs = { unitPref: r.data.unitPref || 'imperial', keepAwake: !!r.data.keepAwake };
       setNavUser(S.user);
       await loadDashboardData();
     })();
